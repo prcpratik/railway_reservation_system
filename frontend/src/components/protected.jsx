@@ -9,8 +9,5 @@ const ProtectedRoute = ({ children }) => {
 
 export default ProtectedRoute;
 
-//comment from komal will remove afterwards
 
-
-//comment from Mitali will be removed later
 
