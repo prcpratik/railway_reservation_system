@@ -1,7 +1,7 @@
 // App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
-import Dashboard from "./pages/dashboard";
+import Dashboard from "./pages/admin/admindashboard";
 import ProtectedRoute from "./components/protected";
 
 function App() {
