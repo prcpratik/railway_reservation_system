@@ -1,0 +1,20 @@
+# Copy this file to application-local.properties (same folder) and fill in
+# YOUR values. application-local.properties is git-ignored, so your password
+# and keys never reach GitHub.
+
+spring.datasource.username=root
+spring.datasource.password=your_mysql_password
+
+# JWT signing secret - type any random string of at least 32 characters.
+# Whoever knows this secret can forge login tokens, so keep it out of git.
+app.jwt.secret=type_any_random_string_of_32plus_characters_here
+
+# Optional - enable Razorpay test-mode payment:
+#razorpay.enabled=true
+#razorpay.key-id=rzp_test_yourKeyId
+#razorpay.key-secret=yourKeySecret
+
+# Optional - enable real email (Gmail App Password, not your login password):
+#app.mail.enabled=true
+#spring.mail.username=youremail@gmail.com
+#spring.mail.password=your16charapppassword
