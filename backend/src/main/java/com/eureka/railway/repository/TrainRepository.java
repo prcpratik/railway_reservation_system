@@ -15,6 +15,13 @@ public interface TrainRepository extends JpaRepository<Train, Long> {
 
     boolean existsByTrainNumber(String trainNumber);
 
+    @Query("SELECT t FROM Train t WHERE LOWER(t.source) = LOWER(:source) " +
+           "AND LOWER(t.destination) = LOWER(:destination) " +
+           "AND :day MEMBER OF t.runsOn")
+    List<Train> findByEndpointsOnDay(@Param("source") String source,
+                                     @Param("destination") String destination,
+                                     @Param("day") DayOfWeek day);
+
    
     // trains that stop at BOTH stations, with the boarding stop earlier in the
     // route than the destination, AND that run on the journey's weekday -
@@ -27,5 +34,13 @@ public interface TrainRepository extends JpaRepository<Train, Long> {
     List<Train> searchByStopsOnDay(@Param("source") String source,
                                    @Param("destination") String destination,
                                    @Param("day") DayOfWeek day);
+
+
+       // pessimistic write lock (SELECT ... FOR UPDATE) - used while booking so two
+    // people booking the same train are forced to run one after the other,
+    // preventing the last seat from being sold twice.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT t FROM Train t WHERE t.id = :id")
+    Optional<Train> findByIdForUpdate(@Param("id") Long id);
 
 }
