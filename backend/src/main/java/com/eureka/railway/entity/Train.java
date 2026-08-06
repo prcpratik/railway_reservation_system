@@ -58,7 +58,7 @@ public class Train {
 	    
 	    
 	    @OneToMany(mappedBy="train",cascade = CascadeType.ALL , orphanRemoval = true)
-	    private List<TrainClass> classes = new ArrayList()<>();
+	    private List<TrainClass> classes = new ArrayList<>();
 	    
 	    // the route, in travel order. Optional: a train with no stops listed is still
 	    // searchable by its source and destination.
