@@ -13,3 +13,4 @@ frontend/dist/
 .settings/
 .project
 .classpath
+/.metadata/

@@ -193,5 +193,114 @@ public class BookingService {
         } while (bookingRepository.existsByPnr(pnr));
         return pnr;
     }
+    
+    // full refund of the given amount to the original payment (only for online-paid
+    // bookings). Called before the cancellation is persisted, so a failed refund
+    // rolls back the whole @Transactional method and nothing is cancelled.
+    // Returns the amount actually refunded (0 if nothing was paid online).
+    private double refund(Booking booking, double amount) {
+        if (amount <= 0 || booking.getRazorpayPaymentId() == null) {
+            return 0; // nothing was paid online, so nothing to refund
+        }
+        paymentService.refund(booking.getRazorpayPaymentId(), amount);
+        booking.setRefundedAmount(booking.getRefundedAmount() + amount);
+        return amount;
+    }
+
+    private Booking getOwnBooking(Long bookingId, String userEmail) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+        if (!booking.getUser().getEmail().equals(userEmail)) {
+            throw new IllegalArgumentException("You can cancel only your own bookings");
+        }
+        return booking;
+    }
+
+    // booking status and payable fare always follow from the passenger statuses
+    private void recompute(Booking booking) {
+        long cancelled = booking.getPassengers().stream()
+                .filter(p -> "CANCELLED".equals(p.getStatus()))
+                .count();
+        long waitlisted = booking.getPassengers().stream()
+                .filter(p -> "WAITLISTED".equals(p.getStatus()))
+                .count();
+        long active = booking.getPassengers().size() - cancelled;
+
+        // waitlisted passengers have paid too, so they count towards the fare
+        booking.setTotalFare(active * booking.getFarePerSeat());
+
+        // a booking awaiting payment stays PENDING until the payment succeeds
+        if ("PENDING".equals(booking.getStatus()) && cancelled == 0) {
+            return;
+        }
+        if (active == 0) {
+            booking.setStatus("CANCELLED");
+        } else if (cancelled > 0) {
+            booking.setStatus("PARTIALLY_CANCELLED");
+        } else if (waitlisted > 0) {
+            booking.setStatus("WAITLISTED"); // not fully confirmed yet
+        } else {
+            booking.setStatus("CONFIRMED");
+        }
+    }
+
+    // Called after seats are freed. Promotes the earliest waitlisted passengers
+    // into the free seats, then renumbers whoever is still waiting (WL3 -> WL2).
+    // Must be called with the train row locked, because it allocates seat numbers.
+    private void promoteFromWaitlist(Train train, SeatClass seatClass, LocalDate journeyDate) {
+        TrainClass trainClass = train.findClass(seatClass).orElse(null);
+        if (trainClass == null) {
+            return;
+        }
+        List<Passenger> queue = bookingRepository.findWaitlistQueue(train.getId(), seatClass, journeyDate);
+        if (queue.isEmpty()) {
+            return;
+        }
+        int booked = bookingRepository.countBookedSeats(train.getId(), seatClass, journeyDate);
+        int free = Math.max(0, trainClass.getTotalSeats() - booked);
+
+        Set<Booking> promotedBookings = new LinkedHashSet<>();
+        if (free > 0) {
+            List<Integer> seats = allocateSeatNumbers(
+                    bookingRepository.findTakenSeatNumbers(train.getId(), seatClass, journeyDate),
+                    trainClass.getTotalSeats(), Math.min(free, queue.size()));
+            for (int i = 0; i < seats.size(); i++) {
+                Passenger promoted = queue.get(i);
+                promoted.setStatus("CONFIRMED");
+                promoted.setSeatNumber(seats.get(i));
+                promoted.setWaitlistNumber(null);
+                promotedBookings.add(promoted.getBooking());
+            }
+            queue = queue.subList(seats.size(), queue.size());
+        }
+        // everyone still waiting moves up the queue
+        int position = 1;
+        for (Passenger waiting : queue) {
+            waiting.setWaitlistNumber(position++);
+        }
+        for (Booking promoted : promotedBookings) {
+            recompute(promoted);
+            bookingRepository.save(promoted);
+            notificationService.sendWaitlistPromoted(promoted);
+        }
+    }
+
+    private void validatePassengers(List<PassengerRequest> passengers) {
+        if (passengers == null || passengers.isEmpty()) {
+            throw new IllegalArgumentException("Add at least one passenger");
+        }
+        if (passengers.size() > MAX_PASSENGERS) {
+            throw new IllegalArgumentException("Maximum " + MAX_PASSENGERS + " passengers per booking");
+        }
+        for (PassengerRequest p : passengers) {
+            if (p.name() == null || p.name().isBlank()) {
+                throw new IllegalArgumentException("Passenger name is required");
+            }
+            if (p.age() == null || p.age() < 1 || p.age() > 120) {
+                throw new IllegalArgumentException("Passenger age must be between 1 and 120");
+            }
+        }
+    }
+   
 
 }
