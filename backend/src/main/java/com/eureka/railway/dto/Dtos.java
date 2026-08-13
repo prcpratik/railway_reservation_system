@@ -5,10 +5,9 @@ import com.eureka.railway.entity.Passenger;
 import com.eureka.railway.entity.SeatClass;
 import com.eureka.railway.entity.Train;
 import com.eureka.railway.entity.TrainStop;
-import com.eureka.railway.entity.User;
+
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 // small request/response records used by the controllers
@@ -25,7 +24,7 @@ public class Dtos {
 
     public record ProfileResponse(String name, String email, String role, String phone) {
         
-        public static ProfileResponse from(User u) {
+        public static ProfileResponse from(com.eureka.railway.entity.User u) {
             return new ProfileResponse(u.getName(), u.getEmail(), u.getRole(), u.getPhone());
         }
     }
@@ -100,17 +99,8 @@ public class Dtos {
                     arrives = stop.getArrivalTime();
                 }
             }
-            
-            // 1. Created an empty list for the DTOs to store dtos
-            List<PassengerResponse> passengerList = new ArrayList<>();
 
-            // 2. Loop through each Passenger entity in the booking
-            for (Passenger passenger : b.getPassengers()) {
-                                // Convert and add to list
-                    PassengerResponse dto = PassengerResponse.from(passenger);
-                    passengerList.add(dto);
-                        }
-            
+           
             return new BookingResponse(
                     b.getId(),
                     b.getPnr(),
@@ -132,7 +122,7 @@ public class Dtos {
                     b.getTotalFare(),
                     b.getRefundedAmount(),
                     b.getRazorpayOrderId(),
-                    passengerList);
+                    b.getPassengers().stream().map(PassengerResponse::from).toList());
         }
 
         private static boolean notBlank(String value) {

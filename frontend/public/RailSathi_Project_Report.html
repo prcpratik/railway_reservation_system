@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RailSathi — Project Report</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  /* ── Reset & Base ──────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 12pt; }
+  body {
+    font-family: 'Times New Roman', Times, serif;
+    line-height: 1.6;
+    color: #1a1a1a;
+    background: #fff;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* ── Print / PDF page rules ────────────────────────────────── */
+  @page { size: A4; margin: 20mm 18mm 20mm 25mm; }
+  @media print {
+    body { padding: 0; }
+    .page-break { page-break-before: always; }
+    .no-break { page-break-inside: avoid; }
+    .cover-page, .certificate-page { page-break-after: always; }
+    nav.toc { page-break-after: always; }
+  }
+  @media screen {
+    body { max-width: 210mm; margin: 0 auto; padding: 20mm 18mm 20mm 25mm; background: #f0f0f0; }
+    .page-break { border-top: 2px dashed #ccc; margin: 40px 0; padding-top: 40px; }
+    body > * { background: #fff; }
+  }
+
+  /* ── Typography ────────────────────────────────────────────── */
+  h1 { font-size: 24pt; margin-bottom: 12pt; color: #0d1b2a; text-align: center; }
+  h2 { font-size: 16pt; margin: 24pt 0 10pt; color: #1b263b; border-bottom: 2px solid #0d47a1; padding-bottom: 4pt; }
+  h3 { font-size: 13pt; margin: 16pt 0 8pt; color: #1b3a5c; }
+  h4 { font-size: 12pt; margin: 12pt 0 6pt; color: #333; }
+  p { margin: 6pt 0; text-align: justify; }
+  ul, ol { margin: 6pt 0 6pt 20pt; }
+  li { margin: 3pt 0; }
+
+  /* ── Tables ────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; margin: 10pt 0 14pt; font-size: 10.5pt; }
+  th, td { border: 1px solid #555; padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  th { background: #0d47a1; color: #fff; font-weight: bold; }
+  tr:nth-child(even) { background: #e8eef6; }
+  caption { font-weight: bold; margin-bottom: 4pt; text-align: left; font-size: 11pt; }
+
+  /* ── Cover Page ────────────────────────────────────────────── */
+  .cover-page {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; text-align: center; padding: 40pt 30pt;
+  }
+  .cover-page .institute { font-size: 16pt; font-weight: bold; color: #0d47a1; margin-bottom: 6pt; letter-spacing: 0.5pt; }
+  .cover-page .dept { font-size: 12pt; color: #333; margin-bottom: 30pt; }
+  .cover-page .project-label { font-size: 11pt; color: #555; text-transform: uppercase; letter-spacing: 2pt; margin-bottom: 8pt; }
+  .cover-page .project-title { font-size: 28pt; font-weight: bold; color: #0d1b2a; margin-bottom: 6pt; }
+  .cover-page .project-subtitle { font-size: 14pt; color: #1b3a5c; margin-bottom: 40pt; font-style: italic; }
+  .cover-page .submitted { font-size: 11pt; color: #555; margin-bottom: 10pt; }
+  .cover-page .team-list { list-style: none; padding: 0; margin: 0 0 30pt; }
+  .cover-page .team-list li { font-size: 13pt; margin: 4pt 0; color: #1a1a1a; }
+  .cover-page .program { font-size: 11pt; color: #333; margin-top: 20pt; }
+  .cover-page .year { font-size: 11pt; color: #555; }
+  .cover-line { width: 60%; height: 3px; background: linear-gradient(90deg, #0d47a1, #42a5f5, #0d47a1); margin: 16pt auto; border: none; }
+
+  /* ── Diagrams ──────────────────────────────────────────────── */
+  .mermaid { margin: 14pt auto; text-align: center; }
+  .mermaid svg { max-width: 100% !important; }
+  .diagram-caption { text-align: center; font-style: italic; font-size: 10pt; color: #555; margin: 4pt 0 16pt; }
+
+  /* ── Code blocks ───────────────────────────────────────────── */
+  pre { background: #f5f5f5; border: 1px solid #ccc; padding: 8pt 12pt; font-family: 'Courier New', monospace; font-size: 9.5pt; overflow-x: auto; margin: 8pt 0; line-height: 1.45; white-space: pre-wrap; }
+  code { font-family: 'Courier New', monospace; font-size: 9.5pt; background: #f0f0f0; padding: 1pt 3pt; }
+
+  /* ── Misc ───────────────────────────────────────────────────── */
+  .center { text-align: center; }
+  .sr-no { width: 40pt; text-align: center; }
+  .highlight-box { background: #e3f2fd; border-left: 4px solid #0d47a1; padding: 10pt 14pt; margin: 10pt 0; }
+  .note { font-size: 10pt; color: #555; font-style: italic; }
+  figure { margin: 12pt 0; text-align: center; }
+  figcaption { font-size: 10pt; font-style: italic; color: #555; margin-top: 4pt; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════
+     COVER PAGE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="cover-page">
+  <div class="institute">Centre for Development of Advanced Computing (CDAC)</div>
+  <div class="dept">Post Graduate Certificate Program in Advanced Computing (PG-CP AC)</div>
+  <hr class="cover-line">
+  <div class="project-label">Project Report</div>
+  <div class="project-title">RailSathi</div>
+  <div class="project-subtitle">AI-Powered Railway Reservation System</div>
+  <hr class="cover-line">
+  <div class="submitted">Submitted By</div>
+  <ul class="team-list">
+    <li><strong>1.</strong> Ayush Phapale</li>
+    <li><strong>2.</strong> Komal Chavan</li>
+    <li><strong>3.</strong> Mitali Raut</li>
+    <li><strong>4.</strong> Pratik Chavan</li>
+    <li><strong>5.</strong> Pratik Dhopte</li>
+  </ul>
+  <div class="program">PG Certificate Program in Advanced Computing (PG-CP AC)</div>
+  <div class="year">Academic Year 2025–2026</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CERTIFICATE PAGE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break certificate-page" style="min-height:80vh; padding-top:60pt;">
+  <h1>Certificate</h1>
+  <p style="text-align:center; margin:20pt 0;">This is to certify that the project entitled</p>
+  <p style="text-align:center; font-size:16pt; font-weight:bold; color:#0d47a1; margin:10pt 0;">
+    "RailSathi — AI-Powered Railway Reservation System"
+  </p>
+  <p style="text-align:center; margin:20pt 0;">
+    has been successfully completed by the following students of<br>
+    <strong>Post Graduate Certificate Program in Advanced Computing (PG-CP AC)</strong><br>
+    at the Centre for Development of Advanced Computing (CDAC).
+  </p>
+  <table style="width:70%; margin:30pt auto; border:none;">
+    <tr style="background:none;"><td style="border:none; padding:4pt 0;">1. Ayush Phapale</td></tr>
+    <tr style="background:none;"><td style="border:none; padding:4pt 0;">2. Komal Chavan</td></tr>
+    <tr style="background:none;"><td style="border:none; padding:4pt 0;">3. Mitali Raut</td></tr>
+    <tr style="background:none;"><td style="border:none; padding:4pt 0;">4. Pratik Chavan</td></tr>
+    <tr style="background:none;"><td style="border:none; padding:4pt 0;">5. Pratik Dhopte</td></tr>
+  </table>
+  <div style="display:flex; justify-content:space-between; margin-top:80pt; padding:0 40pt;">
+    <div style="text-align:center;">
+      <div style="border-top:1px solid #333; width:160pt; margin:0 auto;"></div>
+      <p style="margin-top:4pt;"><strong>Project Guide</strong></p>
+    </div>
+    <div style="text-align:center;">
+      <div style="border-top:1px solid #333; width:160pt; margin:0 auto;"></div>
+      <p style="margin-top:4pt;"><strong>Head of Department</strong></p>
+    </div>
+  </div>
+  <p style="text-align:center; margin-top:40pt;">Date: ____________________</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ACKNOWLEDGEMENT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h1>Acknowledgement</h1>
+  <p>We would like to express our sincere gratitude to the <strong>Centre for Development of Advanced Computing (CDAC)</strong> for providing us the opportunity and infrastructure to undertake this project as part of the PG-CP AC program.</p>
+  <p>We extend our heartfelt thanks to our <strong>project guide</strong> and faculty members for their constant guidance, valuable suggestions, and encouragement throughout the development of this project.</p>
+  <p>We are also grateful to our peers and colleagues whose constructive feedback helped us refine the system at various stages of development.</p>
+  <p>Finally, we thank our families for their unwavering support and motivation during the entire course of this project.</p>
+  <br>
+  <p style="text-align:right; margin-top:30pt;">
+    — Ayush Phapale<br>
+    — Komal Chavan<br>
+    — Mitali Raut<br>
+    — Pratik Chavan<br>
+    — Pratik Dhopte
+  </p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     ABSTRACT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h1>Abstract</h1>
+  <p><strong>RailSathi</strong> is a full-stack, AI-powered railway reservation system designed and developed as the capstone project for the CDAC PG-CP AC program. The system replicates core functionalities of India's railway booking infrastructure — including train search with intermediate stations, multi-class seat management, dynamic fare calculation based on distance, real-time seat availability, waitlist management with automatic promotion, Razorpay-integrated payment processing, and email notifications — while augmenting it with a <strong>Generative AI chatbot</strong> powered by the Groq LLM (LLaMA 3.3 70B) for natural-language train enquiries.</p>
+  <p>The architecture follows a <strong>microservices-oriented</strong> pattern with four independently deployable components: a <strong>React 18</strong> frontend (Vite), a <strong>Spring Boot 3.5</strong> REST backend, a <strong>FastAPI</strong> GenAI service, and a <strong>Node.js Express</strong> API gateway that unifies routing and cross-origin concerns. Data persistence is handled by <strong>MySQL 8</strong> via Spring Data JPA with Hibernate ORM. Security is implemented through <strong>JWT-based stateless authentication</strong> with BCrypt password hashing and role-based access control (RBAC).</p>
+  <p>Key engineering highlights include <strong>pessimistic database locking</strong> to prevent seat overselling under concurrent bookings, <strong>HMAC-SHA256 payment signature verification</strong>, AOP-based cross-cutting logging, and a comprehensive DTO layer to decouple the API contract from the persistence model.</p>
+  <p><strong>Keywords:</strong> Railway Reservation, Full-Stack, Spring Boot, React, GenAI, LLM, Razorpay, JWT, Microservices, CDAC</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     TABLE OF CONTENTS
+     ══════════════════════════════════════════════════════════════ -->
+<nav class="toc page-break">
+  <h1>Table of Contents</h1>
+  <table style="border:none;">
+    <tr style="background:none;"><td style="border:none;"><strong>Chapter</strong></td><td style="border:none; text-align:right;"><strong>Page</strong></td></tr>
+    <tr style="background:none;"><td style="border:none;">1. Introduction</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">2. Problem Statement &amp; Objectives</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">3. Literature Survey</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">4. System Requirements</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;4.1 Hardware Requirements</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;4.2 Software Requirements</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">5. Software Requirements Specification (SRS)</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;5.1 Functional Requirements</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;5.2 Non-Functional Requirements</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">6. System Architecture</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">7. UML Diagrams</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;7.1 Use Case Diagram</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;7.2 Class Diagram</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;7.3 Sequence Diagrams</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;7.4 Activity Diagrams</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">&emsp;7.5 State Diagram</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">8. Database Design (ER Diagram)</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">9. Module Description</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">10. User Flow</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">11. REST API Specification</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">12. Implementation Details</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">13. Testing</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">14. Future Enhancements</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">15. Conclusion</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">16. References</td><td style="border:none; text-align:right;">—</td></tr>
+    <tr style="background:none;"><td style="border:none;">17. Team Contribution</td><td style="border:none; text-align:right;">—</td></tr>
+  </table>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 1 — INTRODUCTION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 1: Introduction</h2>
+
+  <h3>1.1 Background</h3>
+  <p>The Indian Railways is the fourth-largest railway network in the world, carrying over 8 billion passengers annually. The existing online reservation system (IRCTC) handles millions of concurrent transactions, making railway ticketing one of the most demanding real-time systems in the country. Understanding the engineering behind such a system — from concurrent seat management to secure payment processing — provides an excellent learning opportunity for advanced computing students.</p>
+
+  <h3>1.2 Motivation</h3>
+  <p>The motivation for <strong>RailSathi</strong> stems from the desire to build a production-grade, full-stack application that covers the core CDAC PG-CP AC syllabus topics (Spring Boot, React, MySQL, Spring Security, AOP, Redux) within a single, cohesive project rather than disconnected lab exercises. By choosing the railway reservation domain, the team addresses real-world challenges such as:</p>
+  <ul>
+    <li>Concurrent access and data integrity (multiple users booking the last seat simultaneously)</li>
+    <li>Multi-entity relational data modelling (trains → classes → stops → bookings → passengers)</li>
+    <li>Secure, stateless authentication across a decoupled frontend and backend</li>
+    <li>Third-party integration (Razorpay payments, Gmail SMTP, Groq LLM)</li>
+  </ul>
+
+  <h3>1.3 Scope</h3>
+  <p>RailSathi is designed as a <strong>web-based railway reservation platform</strong> offering:</p>
+  <ul>
+    <li>User registration and login with JWT-based security</li>
+    <li>Train search with intermediate-station routing and day-of-week filtering</li>
+    <li>Multi-class, distance-proportional fare booking for up to 6 passengers per ticket</li>
+    <li>Waitlist management with automatic seat promotion on cancellation</li>
+    <li>Razorpay test-mode online payment with HMAC signature verification</li>
+    <li>Full and partial cancellation with automated refunds</li>
+    <li>Email notifications (booking confirmation and cancellation)</li>
+    <li>AI-powered chatbot for train enquiries using Groq LLM</li>
+    <li>Admin dashboard for train management, booking oversight, and admin creation</li>
+  </ul>
+
+  <h3>1.4 Project Overview</h3>
+  <p>The system follows a <strong>four-service architecture</strong>:</p>
+  <ol>
+    <li><strong>Frontend</strong> — React 18 SPA served by Vite dev server (port 5173)</li>
+    <li><strong>API Gateway</strong> — Node.js Express reverse proxy (port 8080) routing <code>/api/genai/*</code> to the GenAI service and <code>/api/*</code> to Spring Boot</li>
+    <li><strong>Backend</strong> — Spring Boot 3.5 REST API (port 8081) with Spring Data JPA + MySQL</li>
+    <li><strong>GenAI Service</strong> — Python FastAPI (port 8083) integrating Groq's LLaMA 3.3 70B model via LangChain</li>
+  </ol>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 2 — PROBLEM STATEMENT & OBJECTIVES
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 2: Problem Statement &amp; Objectives</h2>
+
+  <h3>2.1 Problem Statement</h3>
+  <p>Design and implement a full-stack, AI-enhanced railway reservation system that allows passengers to search trains, book and cancel tickets with real-time seat availability, process online payments securely, receive email notifications, and interact with an intelligent chatbot — while administrators manage trains and monitor all bookings through a dedicated dashboard.</p>
+
+  <h3>2.2 Objectives</h3>
+  <ol>
+    <li>To build a <strong>secure, role-based</strong> web application with JWT authentication and BCrypt password hashing.</li>
+    <li>To implement <strong>concurrency-safe seat booking</strong> using pessimistic database locking to prevent double-selling.</li>
+    <li>To support <strong>intermediate-station routing</strong> and distance-based proportional fare calculation.</li>
+    <li>To integrate <strong>Razorpay payment gateway</strong> (test mode) with server-side HMAC-SHA256 signature verification.</li>
+    <li>To provide <strong>waitlist management</strong> with automatic promotion when seats become available.</li>
+    <li>To offer <strong>full and partial ticket cancellation</strong> with automated refund processing.</li>
+    <li>To send <strong>email notifications</strong> on booking confirmation, cancellation, and waitlist promotion.</li>
+    <li>To integrate a <strong>Generative AI chatbot</strong> using Groq LLM for natural-language train enquiries.</li>
+    <li>To implement the <strong>complete CDAC syllabus topics</strong> (Spring Boot, React, Redux, JPA, AOP, Security) in a cohesive application.</li>
+    <li>To maintain <strong>clean architecture</strong> with proper layering (Controller → Service → Repository), DTOs, and separation of concerns.</li>
+  </ol>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 3 — LITERATURE SURVEY
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 3: Literature Survey</h2>
+
+  <h3>3.1 Existing Systems</h3>
+  <table>
+    <tr><th>System</th><th>Technology</th><th>Key Features</th><th>Limitations</th></tr>
+    <tr><td>IRCTC</td><td>Java/J2EE, Oracle DB</td><td>Complete reservation, Tatkal, tourism, meals</td><td>Proprietary, complex UI, no AI assistant</td></tr>
+    <tr><td>RedBus</td><td>Microservices, AWS</td><td>Bus booking, user reviews, GPS tracking</td><td>Bus-only, no rail integration</td></tr>
+    <tr><td>Trainman</td><td>Mobile-first</td><td>PNR status, train info, seat availability</td><td>Read-only, no booking capability</td></tr>
+    <tr><td>RailYatri</td><td>Mobile App</td><td>Live train tracking, crowd prediction</td><td>Limited booking, ad-supported</td></tr>
+  </table>
+
+  <h3>3.2 Technology Comparison</h3>
+  <table>
+    <tr><th>Aspect</th><th>Existing Approaches</th><th>Our Approach (RailSathi)</th></tr>
+    <tr><td>Backend</td><td>Monolithic J2EE / PHP</td><td>Spring Boot 3.5 REST + Microservice GenAI</td></tr>
+    <tr><td>Frontend</td><td>Server-side JSP / jQuery</td><td>React 18 SPA with Redux state management</td></tr>
+    <tr><td>Authentication</td><td>Session-based (cookies)</td><td>Stateless JWT with BCrypt hashing</td></tr>
+    <tr><td>Concurrency</td><td>Application-level locks</td><td>Database-level pessimistic locking (SELECT FOR UPDATE)</td></tr>
+    <tr><td>AI Integration</td><td>Rule-based FAQ bots</td><td>LLM-powered chatbot (Groq LLaMA 3.3 70B via LangChain)</td></tr>
+    <tr><td>Payment</td><td>Custom payment forms</td><td>Razorpay SDK with HMAC signature verification</td></tr>
+  </table>
+
+  <h3>3.3 Key Takeaways</h3>
+  <p>The literature survey reveals that most existing railway booking systems are either proprietary monoliths (IRCTC) or read-only information apps (Trainman, RailYatri). RailSathi differentiates itself by combining a modern, decoupled architecture (React + Spring Boot + FastAPI) with an AI-powered assistant and a focus on demonstrating concurrency safety and payment security — making it ideal as both a learning project and a functional prototype.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 4 — SYSTEM REQUIREMENTS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 4: System Requirements</h2>
+
+  <h3>4.1 Hardware Requirements</h3>
+  <table>
+    <tr><th>Component</th><th>Minimum Specification</th><th>Recommended Specification</th></tr>
+    <tr><td>Processor</td><td>Intel Core i3 / AMD Ryzen 3 (Dual Core)</td><td>Intel Core i5 / AMD Ryzen 5 (Quad Core)</td></tr>
+    <tr><td>RAM</td><td>4 GB</td><td>8 GB or higher</td></tr>
+    <tr><td>Hard Disk</td><td>20 GB free space</td><td>50 GB SSD</td></tr>
+    <tr><td>Display</td><td>1366 × 768 resolution</td><td>1920 × 1080 Full HD</td></tr>
+    <tr><td>Network</td><td>Broadband Internet (for API keys, npm packages)</td><td>Broadband Internet</td></tr>
+  </table>
+
+  <h3>4.2 Software Requirements</h3>
+  <table>
+    <tr><th>Category</th><th>Software</th><th>Version</th><th>Purpose</th></tr>
+    <tr><td>Operating System</td><td>Windows 10/11, macOS, Linux</td><td>Latest</td><td>Development &amp; deployment</td></tr>
+    <tr><td>JDK</td><td>Oracle JDK / OpenJDK</td><td>21</td><td>Spring Boot backend compilation &amp; runtime</td></tr>
+    <tr><td>Build Tool</td><td>Apache Maven</td><td>3.9+</td><td>Java dependency management &amp; build</td></tr>
+    <tr><td>Node.js</td><td>Node.js</td><td>18+ LTS</td><td>Frontend (Vite) &amp; API Gateway (Express)</td></tr>
+    <tr><td>npm</td><td>Node Package Manager</td><td>9+</td><td>JavaScript package management</td></tr>
+    <tr><td>Python</td><td>Python</td><td>3.10+</td><td>GenAI microservice (FastAPI)</td></tr>
+    <tr><td>Database</td><td>MySQL</td><td>8.0 / 9.0</td><td>Relational data persistence</td></tr>
+    <tr><td>IDE (Backend)</td><td>IntelliJ IDEA / Eclipse STS</td><td>Latest</td><td>Java development</td></tr>
+    <tr><td>IDE (Frontend)</td><td>VS Code</td><td>Latest</td><td>React development</td></tr>
+    <tr><td>Browser</td><td>Google Chrome / Firefox</td><td>Latest</td><td>Application testing</td></tr>
+    <tr><td>Version Control</td><td>Git + GitHub</td><td>Latest</td><td>Source code management</td></tr>
+    <tr><td>API Testing</td><td>Postman</td><td>Latest</td><td>REST API testing</td></tr>
+  </table>
+
+  <h3>4.3 Third-Party Services</h3>
+  <table>
+    <tr><th>Service</th><th>Provider</th><th>Purpose</th></tr>
+    <tr><td>Payment Gateway</td><td>Razorpay (Test Mode)</td><td>Online payment processing, refunds</td></tr>
+    <tr><td>Email SMTP</td><td>Gmail (App Password)</td><td>Booking confirmation &amp; cancellation emails</td></tr>
+    <tr><td>LLM API</td><td>Groq Cloud (LLaMA 3.3 70B)</td><td>AI chatbot responses</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 5 — SRS (SOFTWARE REQUIREMENTS SPECIFICATION)
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 5: Software Requirements Specification (SRS)</h2>
+
+  <h3>5.1 Functional Requirements</h3>
+
+  <h4>FR-01: User Registration &amp; Authentication</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-01.1</td><td>Users shall register with name, email, and password</td><td>High</td></tr>
+    <tr><td>FR-01.2</td><td>Passwords shall be stored as BCrypt hashes, never in plaintext</td><td>High</td></tr>
+    <tr><td>FR-01.3</td><td>Login shall return a signed JWT token (HS256, 24h expiry)</td><td>High</td></tr>
+    <tr><td>FR-01.4</td><td>Users shall be able to reset forgotten passwords via emailed single-use tokens (30-min expiry)</td><td>Medium</td></tr>
+    <tr><td>FR-01.5</td><td>Users shall be able to update their profile (name, phone) and change their password</td><td>Medium</td></tr>
+  </table>
+
+  <h4>FR-02: Train Search</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-02.1</td><td>Users shall search trains by source station, destination station, and journey date</td><td>High</td></tr>
+    <tr><td>FR-02.2</td><td>Search shall support intermediate stations (any two stops on the route in travel order)</td><td>High</td></tr>
+    <tr><td>FR-02.3</td><td>Search results shall filter by the day of the week the train runs</td><td>High</td></tr>
+    <tr><td>FR-02.4</td><td>Each result shall show available classes with seat availability, full fare, and part-journey fare</td><td>High</td></tr>
+  </table>
+
+  <h4>FR-03: Booking &amp; Payment</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-03.1</td><td>Logged-in users shall book tickets for 1–6 passengers (name, age, gender each)</td><td>High</td></tr>
+    <tr><td>FR-03.2</td><td>Fare shall be calculated proportionally by distance for part-journey bookings</td><td>High</td></tr>
+    <tr><td>FR-03.3</td><td>Each confirmed passenger shall receive a unique seat number per train + class + date</td><td>High</td></tr>
+    <tr><td>FR-03.4</td><td>When Razorpay is enabled, bookings shall stay PENDING until payment is verified via HMAC signature</td><td>High</td></tr>
+    <tr><td>FR-03.5</td><td>A unique 10-digit PNR shall be generated for each booking</td><td>Medium</td></tr>
+  </table>
+
+  <h4>FR-04: Waitlist Management</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-04.1</td><td>When a class is full, users may opt to join the waitlist (WL1, WL2, …)</td><td>High</td></tr>
+    <tr><td>FR-04.2</td><td>When a seat is freed via cancellation, the earliest waitlisted passenger shall be automatically promoted to CONFIRMED with a seat number</td><td>High</td></tr>
+    <tr><td>FR-04.3</td><td>Promoted passengers shall receive an email notification</td><td>Medium</td></tr>
+  </table>
+
+  <h4>FR-05: Cancellation &amp; Refund</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-05.1</td><td>Users shall cancel an entire booking (all passengers)</td><td>High</td></tr>
+    <tr><td>FR-05.2</td><td>Users shall cancel individual passengers (partial cancellation)</td><td>High</td></tr>
+    <tr><td>FR-05.3</td><td>Cancellation of a paid booking shall trigger a Razorpay refund for the cancelled seat(s)</td><td>High</td></tr>
+    <tr><td>FR-05.4</td><td>Booking status shall be derived from passenger statuses (CONFIRMED, PARTIALLY_CANCELLED, CANCELLED)</td><td>High</td></tr>
+  </table>
+
+  <h4>FR-06: Admin Functions</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-06.1</td><td>Admins shall add, edit, and delete trains (with classes and route stops)</td><td>High</td></tr>
+    <tr><td>FR-06.2</td><td>Admins shall view all bookings in the system</td><td>High</td></tr>
+    <tr><td>FR-06.3</td><td>Admins shall create additional admin accounts</td><td>Medium</td></tr>
+  </table>
+
+  <h4>FR-07: AI Chatbot</h4>
+  <table>
+    <tr><th>ID</th><th>Requirement</th><th>Priority</th></tr>
+    <tr><td>FR-07.1</td><td>A floating chatbot widget shall be available on all pages</td><td>Medium</td></tr>
+    <tr><td>FR-07.2</td><td>The chatbot shall fetch live train data from the database to answer queries</td><td>Medium</td></tr>
+    <tr><td>FR-07.3</td><td>The chatbot shall handle both railway-specific and general knowledge questions</td><td>Low</td></tr>
+  </table>
+
+  <h3>5.2 Non-Functional Requirements</h3>
+  <table>
+    <tr><th>ID</th><th>Category</th><th>Requirement</th></tr>
+    <tr><td>NFR-01</td><td>Security</td><td>All passwords shall be BCrypt-hashed. JWT tokens signed with HS256. CSRF disabled (stateless API). Payment signatures verified server-side.</td></tr>
+    <tr><td>NFR-02</td><td>Performance</td><td>Seat availability shall be calculated in real-time via database query (not cached counters) to ensure consistency.</td></tr>
+    <tr><td>NFR-03</td><td>Concurrency</td><td>Simultaneous bookings for the same train shall be serialised via pessimistic row locking to prevent overselling.</td></tr>
+    <tr><td>NFR-04</td><td>Reliability</td><td>Payment failures and email failures shall not corrupt booking state (transactional rollback).</td></tr>
+    <tr><td>NFR-05</td><td>Usability</td><td>The UI shall be responsive and accessible on desktop browsers (Chrome, Firefox, Edge).</td></tr>
+    <tr><td>NFR-06</td><td>Maintainability</td><td>Clean layered architecture: Controller → Service → Repository. DTOs decouple API from persistence.</td></tr>
+    <tr><td>NFR-07</td><td>Scalability</td><td>Stateless backend enables horizontal scaling. GenAI service is independently scalable.</td></tr>
+    <tr><td>NFR-08</td><td>Logging</td><td>AOP-based cross-cutting logging on all controller methods with execution time tracking.</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 6 — SYSTEM ARCHITECTURE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 6: System Architecture</h2>
+
+  <h3>6.1 High-Level Architecture Diagram</h3>
+  <div class="mermaid">
+graph LR
+    subgraph Client["Client (Browser)"]
+        A["React 18 SPA<br/>Vite :5173"]
+    end
+
+    subgraph Gateway["API Gateway"]
+        B["Node.js Express<br/>:8080"]
+    end
+
+    subgraph Backend["Backend Service"]
+        C["Spring Boot 3.5<br/>REST API :8081"]
+    end
+
+    subgraph GenAI["GenAI Service"]
+        D["FastAPI + LangChain<br/>Groq LLaMA 3.3 70B<br/>:8083"]
+    end
+
+    subgraph Database["Database"]
+        E[("MySQL 8<br/>eureka_railway")]
+    end
+
+    subgraph External["External Services"]
+        F["Razorpay API"]
+        G["Gmail SMTP"]
+        H["Groq Cloud API"]
+    end
+
+    A -- "HTTP/JSON" --> B
+    B -- "/api/*" --> C
+    B -- "/api/genai/*" --> D
+    C -- "JPA/Hibernate" --> E
+    C -- "RestTemplate" --> F
+    C -- "JavaMail" --> G
+    D -- "LangChain" --> H
+    D -- "httpx /api/trains" --> C
+  </div>
+  <p class="diagram-caption">Fig 6.1 — High-Level System Architecture</p>
+
+  <h3>6.2 Technology Stack Summary</h3>
+  <table>
+    <tr><th>Layer</th><th>Technology</th><th>Version</th><th>Responsibility</th></tr>
+    <tr><td>Presentation</td><td>React 18, React Router, Redux, Axios, React Icons, React Toastify</td><td>18.3.1</td><td>UI rendering, routing, state management, API calls</td></tr>
+    <tr><td>API Gateway</td><td>Node.js, Express, http-proxy-middleware, CORS</td><td>Express 5.2</td><td>Request routing, CORS, path rewriting</td></tr>
+    <tr><td>Business Logic</td><td>Spring Boot, Spring Web, Spring Data JPA, Spring Security, Spring AOP, Spring Mail, Lombok</td><td>3.5.4</td><td>REST API, business rules, security, logging</td></tr>
+    <tr><td>AI/ML</td><td>FastAPI, LangChain, ChatGroq, httpx, Pydantic</td><td>Python 3.10+</td><td>LLM-powered chatbot with live data context</td></tr>
+    <tr><td>Persistence</td><td>MySQL, Hibernate ORM</td><td>8.0/9.0</td><td>Relational data storage</td></tr>
+    <tr><td>Security</td><td>JWT (jjwt 0.11.5), BCrypt, HMAC-SHA256</td><td>—</td><td>Authentication, password hashing, payment verification</td></tr>
+    <tr><td>Payment</td><td>Razorpay Java SDK (RestTemplate)</td><td>Test Mode</td><td>Order creation, payment capture, refunds</td></tr>
+    <tr><td>Email</td><td>Spring Mail, Gmail SMTP</td><td>—</td><td>Booking &amp; cancellation notifications</td></tr>
+  </table>
+
+  <h3>6.3 Backend Layered Architecture</h3>
+  <div class="mermaid">
+graph TB
+    subgraph Presentation["Presentation Layer (Controllers)"]
+        AC["AuthController"]
+        TC["TrainController"]
+        BC["BookingController"]
+        PC["PaymentController"]
+        ADC["AdminController"]
+        GEH["GlobalExceptionHandler"]
+    end
+
+    subgraph Business["Business Layer (Services)"]
+        US["UserService"]
+        TS["TrainService"]
+        BS["BookingService"]
+        PS["PaymentService"]
+        NS["NotificationService"]
+    end
+
+    subgraph Data["Data Access Layer (Repositories)"]
+        UR["UserRepository"]
+        TR["TrainRepository"]
+        BR["BookingRepository"]
+    end
+
+    subgraph CrossCutting["Cross-Cutting Concerns"]
+        LA["LoggingAspect (AOP)"]
+        JF["JwtFilter"]
+        SC["SecurityConfig"]
+    end
+
+    subgraph Persistence["Persistence Layer"]
+        DB[("MySQL Database")]
+    end
+
+    AC --> US
+    TC --> TS
+    BC --> BS
+    PC --> PS
+    ADC --> US
+
+    US --> UR
+    TS --> TR
+    BS --> BR
+    BS --> TS
+    BS --> PS
+    BS --> NS
+
+    UR --> DB
+    TR --> DB
+    BR --> DB
+
+    LA -.-> Presentation
+    JF -.-> Presentation
+    SC -.-> Presentation
+  </div>
+  <p class="diagram-caption">Fig 6.2 — Spring Boot Backend Layered Architecture</p>
+
+  <h3>6.4 Request Processing Flow</h3>
+  <div class="highlight-box">
+    <strong>HTTP Request → JwtFilter</strong> (validates token, sets SecurityContext) <strong>→ SecurityConfig</strong> (checks role-based access rules) <strong>→ Controller</strong> (receives JSON, delegates to service) <strong>→ Service</strong> (applies business logic) <strong>→ Repository</strong> (Spring Data JPA generates SQL) <strong>→ MySQL</strong> (executes query) <strong>→ JSON Response</strong>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 7 — UML DIAGRAMS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 7: UML Diagrams</h2>
+
+  <h3>7.1 Use Case Diagram</h3>
+  <div class="mermaid">
+graph TB
+    subgraph System["RailSathi System"]
+        UC1["Register"]
+        UC2["Login"]
+        UC3["Search Trains"]
+        UC4["Book Ticket"]
+        UC5["Make Payment"]
+        UC6["View My Bookings"]
+        UC7["Cancel Booking"]
+        UC8["Cancel Passenger"]
+        UC9["Forgot Password"]
+        UC10["Update Profile"]
+        UC11["AI Chat Assistant"]
+        UC12["Add/Edit/Delete Train"]
+        UC13["View All Bookings"]
+        UC14["Create Admin"]
+    end
+
+    Guest(("Guest<br/>👤"))
+    User(("Logged-in User<br/>👤"))
+    Admin(("Admin<br/>👤"))
+    ExtPay(("Razorpay<br/>💳"))
+    ExtMail(("Gmail SMTP<br/>📧"))
+    ExtAI(("Groq LLM<br/>🤖"))
+
+    Guest --> UC1
+    Guest --> UC2
+    Guest --> UC3
+    Guest --> UC9
+    Guest --> UC11
+
+    User --> UC3
+    User --> UC4
+    User --> UC5
+    User --> UC6
+    User --> UC7
+    User --> UC8
+    User --> UC10
+    User --> UC11
+
+    Admin --> UC12
+    Admin --> UC13
+    Admin --> UC14
+
+    UC5 --> ExtPay
+    UC4 --> ExtMail
+    UC7 --> ExtMail
+    UC11 --> ExtAI
+  </div>
+  <p class="diagram-caption">Fig 7.1 — Use Case Diagram</p>
+</div>
+
+<div class="page-break">
+  <h3>7.2 Class Diagram (Entity Layer)</h3>
+  <div class="mermaid">
+classDiagram
+    class User {
+        -Long id
+        -String name
+        -String email
+        -String password
+        -String role
+        -String phone
+        -String resetToken
+        -LocalDateTime resetTokenExpiry
+        +User(name, email, password, role)
+    }
+
+    class Train {
+        -Long id
+        -String trainNumber
+        -String name
+        -String source
+        -String destination
+        -String departureTime
+        -String arrivalTime
+        -Set~DayOfWeek~ runsOn
+        -List~TrainClass~ classes
+        -List~TrainStop~ stops
+        +addClass(TrainClass)
+        +addStop(TrainStop)
+        +findClass(SeatClass) Optional
+        +findStop(String) Optional
+        +fareShare(TrainStop, TrainStop) double
+    }
+
+    class TrainClass {
+        -Long id
+        -Train train
+        -SeatClass seatClass
+        -int totalSeats
+        -double fare
+        -int availableSeats
+        -double segmentFare
+        -int waitlistCount
+    }
+
+    class TrainStop {
+        -Long id
+        -Train train
+        -String station
+        -int stopOrder
+        -String arrivalTime
+        -String departureTime
+        -int distanceFromSource
+    }
+
+    class Booking {
+        -Long id
+        -String pnr
+        -User user
+        -Train train
+        -List~Passenger~ passengers
+        -SeatClass seatClass
+        -String fromStation
+        -String toStation
+        -int fromStopOrder
+        -int toStopOrder
+        -LocalDate journeyDate
+        -double farePerSeat
+        -double totalFare
+        -String status
+        -LocalDateTime bookedAt
+        -String razorpayOrderId
+        -String razorpayPaymentId
+        -double refundedAmount
+        +addPassenger(Passenger)
+    }
+
+    class Passenger {
+        -Long id
+        -Booking booking
+        -String name
+        -int age
+        -String gender
+        -String status
+        -Integer seatNumber
+        -Integer waitlistNumber
+    }
+
+    class SeatClass {
+        &lt;&lt;enumeration&gt;&gt;
+        AC1
+        AC2
+        AC3
+        SLEEPER
+        GENERAL
+        +getLabel() String
+    }
+
+    Train "1" --> "*" TrainClass : has classes
+    Train "1" --> "*" TrainStop : has stops
+    Booking "*" --> "1" User : belongs to
+    Booking "*" --> "1" Train : for train
+    Booking "1" --> "*" Passenger : has passengers
+    TrainClass --> SeatClass : uses
+    Booking --> SeatClass : books class
+  </div>
+  <p class="diagram-caption">Fig 7.2 — Class Diagram (JPA Entities)</p>
+</div>
+
+<div class="page-break">
+  <h3>7.3 Sequence Diagrams</h3>
+
+  <h4>7.3.1 User Login Sequence</h4>
+  <div class="mermaid">
+sequenceDiagram
+    actor U as User
+    participant R as React Frontend
+    participant G as API Gateway
+    participant AC as AuthController
+    participant US as UserService
+    participant UR as UserRepository
+    participant JWT as JwtUtil
+
+    U->>R: Enter email & password
+    R->>G: POST /api/auth/login
+    G->>AC: Forward to Spring Boot
+    AC->>US: login(email, password)
+    US->>UR: findByEmail(email)
+    UR-->>US: User entity
+    US->>US: BCrypt.matches(password, hash)
+    alt Password matches
+        US->>JWT: generateToken(email, role)
+        JWT-->>US: JWT token (HS256)
+        US-->>AC: AuthResponse(token, name, email, role)
+        AC-->>G: 200 OK + JSON
+        G-->>R: Response
+        R->>R: Store token in localStorage & Redux
+        R-->>U: Redirect to dashboard
+    else Password mismatch
+        US-->>AC: throw "Invalid email or password"
+        AC-->>G: 401 Unauthorized
+        G-->>R: Error response
+        R-->>U: Show error toast
+    end
+  </div>
+  <p class="diagram-caption">Fig 7.3.1 — Login Sequence Diagram</p>
+
+  <h4>7.3.2 Booking with Payment Sequence</h4>
+  <div class="mermaid">
+sequenceDiagram
+    actor U as User
+    participant R as React Frontend
+    participant G as API Gateway
+    participant BC as BookingController
+    participant BS as BookingService
+    participant TS as TrainService
+    participant PS as PaymentService
+    participant BR as BookingRepository
+    participant DB as MySQL
+    participant RP as Razorpay API
+    participant NS as NotificationService
+    participant SMTP as Gmail SMTP
+
+    U->>R: Select train, class, passengers
+    R->>G: POST /api/bookings (JWT header)
+    G->>BC: Forward request
+    BC->>BS: book(request, userEmail)
+
+    BS->>TS: getByIdForUpdate(trainId)
+    Note over TS,DB: SELECT ... FOR UPDATE<br/>(pessimistic lock acquired)
+    TS->>DB: Lock train row
+    DB-->>TS: Train entity (locked)
+
+    BS->>BR: countBookedSeats(train, class, date)
+    BR->>DB: COUNT(CONFIRMED passengers)
+    DB-->>BR: occupied count
+    BS->>BS: available = capacity - occupied
+
+    alt Seats available
+        BS->>BR: findTakenSeatNumbers()
+        BS->>BS: Allot lowest free seat numbers
+        BS->>PS: createOrder(amount)
+        PS->>RP: Create Razorpay Order
+        RP-->>PS: orderId
+        BS->>BR: save(booking with status=PENDING)
+        BR->>DB: INSERT booking + passengers
+        BS-->>BC: BookingResponse (with orderId)
+        BC-->>R: 200 OK
+
+        R->>R: Open Razorpay Checkout Popup
+        U->>R: Complete payment
+        R->>G: PUT /api/bookings/{id}/pay (paymentId, signature)
+        G->>BC: Forward
+        BC->>BS: confirmPayment()
+        BS->>PS: verifySignature(HMAC-SHA256)
+        PS-->>BS: signature valid
+        BS->>BS: Set status = CONFIRMED
+        BS->>BR: save(booking)
+        BS->>NS: sendBookingConfirmation()
+        NS->>SMTP: Send email
+        BS-->>BC: BookingResponse
+        BC-->>R: 200 OK
+        R-->>U: Show confirmation
+    else Class full
+        BS-->>BC: throw "No seats available"
+        BC-->>R: 400 Bad Request
+        R-->>U: Show error
+    end
+
+    Note over BS,DB: Transaction commits → lock released
+  </div>
+  <p class="diagram-caption">Fig 7.3.2 — Booking with Payment Sequence Diagram</p>
+</div>
+
+<div class="page-break">
+  <h4>7.3.3 Cancellation with Waitlist Promotion Sequence</h4>
+  <div class="mermaid">
+sequenceDiagram
+    actor U as User
+    participant R as React Frontend
+    participant BC as BookingController
+    participant BS as BookingService
+    participant TS as TrainService
+    participant PS as PaymentService
+    participant BR as BookingRepository
+    participant NS as NotificationService
+    participant RP as Razorpay API
+
+    U->>R: Click "Cancel Passenger"
+    R->>BC: PUT /api/bookings/{id}/passengers/{pid}/cancel
+    BC->>BS: cancelPassenger(bookingId, passengerId, email)
+
+    BS->>TS: getByIdForUpdate(trainId)
+    Note over TS: Pessimistic lock acquired
+
+    BS->>BS: Mark passenger CANCELLED
+    BS->>BS: Free seat number
+    BS->>BS: recompute() booking status & totalFare
+
+    alt Booking was paid (has razorpayPaymentId)
+        BS->>PS: refund(paymentId, farePerSeat)
+        PS->>RP: POST /refunds
+        RP-->>PS: Refund success
+        BS->>BS: Add to refundedAmount
+    end
+
+    BS->>BR: findWaitlistQueue(train, class, date)
+    BR-->>BS: List of waitlisted passengers
+
+    alt Waitlist exists
+        BS->>BS: Promote first waitlisted → CONFIRMED
+        BS->>BS: Assign freed seat number
+        BS->>BS: Renumber remaining waitlist
+        BS->>NS: Send promotion email
+    end
+
+    BS->>BR: save(booking)
+    BS->>NS: sendCancellationEmail()
+    BS-->>BC: Updated BookingResponse
+    BC-->>R: 200 OK
+    R-->>U: Show updated booking
+  </div>
+  <p class="diagram-caption">Fig 7.3.3 — Cancellation with Waitlist Promotion</p>
+
+  <h3>7.4 Activity Diagram — Complete Booking Flow</h3>
+  <div class="mermaid">
+graph TD
+    A([Start]) --> B[User searches trains]
+    B --> C{Trains found?}
+    C -- No --> D[Show 'No trains' message]
+    D --> B
+    C -- Yes --> E[Display train results with availability]
+    E --> F{User logged in?}
+    F -- No --> G[Redirect to Login]
+    G --> H[User logs in]
+    H --> E
+    F -- Yes --> I[Select train, class, enter passengers]
+    I --> J{Seats available?}
+    J -- No --> K{User allows waitlist?}
+    K -- No --> L[Show 'Class Full' error]
+    L --> E
+    K -- Yes --> M[Add passengers as WAITLISTED]
+    J -- Yes --> N[Allot seat numbers]
+    M --> O[Create booking]
+    N --> O
+    O --> P{Payment enabled?}
+    P -- No --> Q[Set status CONFIRMED]
+    P -- Yes --> R[Create Razorpay Order]
+    R --> S[Show payment popup]
+    S --> T{Payment successful?}
+    T -- No --> U[Booking stays PENDING]
+    T -- Yes --> V[Verify HMAC signature]
+    V --> W{Signature valid?}
+    W -- No --> X[Reject payment]
+    W -- Yes --> Q
+    Q --> Y[Send confirmation email]
+    Y --> Z[Show booking details]
+    Z --> AA([End])
+  </div>
+  <p class="diagram-caption">Fig 7.4 — Activity Diagram: Booking Flow</p>
+</div>
+
+<div class="page-break">
+  <h3>7.5 State Diagram — Booking Lifecycle</h3>
+  <div class="mermaid">
+stateDiagram-v2
+    [*] --> PENDING : Booking created\n(payment enabled)
+    [*] --> CONFIRMED : Booking created\n(payment disabled)
+    [*] --> WAITLISTED : All passengers\nwaitlisted
+
+    PENDING --> CONFIRMED : Payment verified\n(HMAC valid)
+    PENDING --> CANCELLED : User cancels\nbefore paying
+
+    CONFIRMED --> PARTIALLY_CANCELLED : Some passengers\ncancelled
+    CONFIRMED --> CANCELLED : All passengers\ncancelled
+
+    WAITLISTED --> CONFIRMED : All passengers\npromoted from WL
+    WAITLISTED --> PARTIALLY_CANCELLED : Some passengers\ncancelled
+    WAITLISTED --> CANCELLED : All passengers\ncancelled
+
+    PARTIALLY_CANCELLED --> CANCELLED : Remaining\npassengers cancelled
+
+    CANCELLED --> [*]
+  </div>
+  <p class="diagram-caption">Fig 7.5 — State Diagram: Booking Status Lifecycle</p>
+
+  <h3>7.6 State Diagram — Passenger Lifecycle</h3>
+  <div class="mermaid">
+stateDiagram-v2
+    [*] --> CONFIRMED : Seat available\n(allot seat number)
+    [*] --> WAITLISTED : Class full\n(assign WL position)
+
+    WAITLISTED --> CONFIRMED : Seat freed\n(auto-promotion)
+    CONFIRMED --> CANCELLED : User cancels\n(seat freed)
+    WAITLISTED --> CANCELLED : User cancels\n(WL position freed)
+
+    CANCELLED --> [*]
+  </div>
+  <p class="diagram-caption">Fig 7.6 — State Diagram: Passenger Status Lifecycle</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 8 — DATABASE DESIGN (ER DIAGRAM)
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 8: Database Design</h2>
+
+  <h3>8.1 Entity-Relationship Diagram</h3>
+  <div class="mermaid">
+erDiagram
+    USERS {
+        BIGINT id PK
+        VARCHAR name
+        VARCHAR email UK
+        VARCHAR password
+        VARCHAR role
+        VARCHAR phone
+        VARCHAR reset_token
+        DATETIME reset_token_expiry
+    }
+
+    TRAINS {
+        BIGINT id PK
+        VARCHAR train_number UK
+        VARCHAR name
+        VARCHAR source
+        VARCHAR destination
+        VARCHAR departure_time
+        VARCHAR arrival_time
+    }
+
+    TRAIN_RUN_DAYS {
+        BIGINT train_id FK
+        VARCHAR run_day
+    }
+
+    TRAIN_CLASSES {
+        BIGINT id PK
+        BIGINT train_id FK
+        VARCHAR seat_class
+        INT total_seats
+        DOUBLE fare
+    }
+
+    TRAIN_STOPS {
+        BIGINT id PK
+        BIGINT train_id FK
+        VARCHAR station
+        INT stop_order
+        VARCHAR arrival_time
+        VARCHAR departure_time
+        INT distance_from_source
+    }
+
+    BOOKINGS {
+        BIGINT id PK
+        VARCHAR pnr
+        BIGINT user_id FK
+        BIGINT train_id FK
+        VARCHAR seat_class
+        VARCHAR from_station
+        VARCHAR to_station
+        INT from_stop_order
+        INT to_stop_order
+        DATE journey_date
+        DOUBLE fare_per_seat
+        DOUBLE total_fare
+        VARCHAR status
+        DATETIME booked_at
+        VARCHAR razorpay_order_id
+        VARCHAR razorpay_payment_id
+        DOUBLE refunded_amount
+    }
+
+    PASSENGERS {
+        BIGINT id PK
+        BIGINT booking_id FK
+        VARCHAR name
+        INT age
+        VARCHAR gender
+        VARCHAR status
+        INT seat_number
+        INT waitlist_number
+    }
+
+    USERS ||--o{ BOOKINGS : "places"
+    TRAINS ||--o{ BOOKINGS : "booked on"
+    TRAINS ||--|{ TRAIN_CLASSES : "offers"
+    TRAINS ||--|{ TRAIN_STOPS : "has route"
+    TRAINS ||--|{ TRAIN_RUN_DAYS : "runs on"
+    BOOKINGS ||--|{ PASSENGERS : "contains"
+    TRAIN_CLASSES }o--|| TRAINS : "belongs to"
+  </div>
+  <p class="diagram-caption">Fig 8.1 — Entity-Relationship Diagram</p>
+
+  <h3>8.2 Table Descriptions</h3>
+  <table>
+    <tr><th>Table</th><th>Purpose</th><th>Key Columns</th><th>Relationships</th></tr>
+    <tr><td><code>users</code></td><td>Stores registered users and admins</td><td>id (PK), email (UK), password (BCrypt hash), role (USER/ADMIN)</td><td>1:N with bookings</td></tr>
+    <tr><td><code>trains</code></td><td>Master train information</td><td>id (PK), train_number (UK), source, destination, timings</td><td>1:N with train_classes, train_stops, train_run_days, bookings</td></tr>
+    <tr><td><code>train_classes</code></td><td>Travel classes offered per train</td><td>id (PK), train_id (FK), seat_class, total_seats, fare</td><td>N:1 with trains. UK on (train_id, seat_class)</td></tr>
+    <tr><td><code>train_stops</code></td><td>Route stops in order with distances</td><td>id (PK), train_id (FK), station, stop_order, distance_from_source</td><td>N:1 with trains. UK on (train_id, stop_order)</td></tr>
+    <tr><td><code>train_run_days</code></td><td>Days of week a train operates</td><td>train_id (FK), run_day (MONDAY–SUNDAY)</td><td>N:1 with trains (ElementCollection)</td></tr>
+    <tr><td><code>bookings</code></td><td>Ticket bookings with payment info</td><td>id (PK), pnr, user_id (FK), train_id (FK), seat_class, journey_date, status</td><td>N:1 with users and trains. 1:N with passengers</td></tr>
+    <tr><td><code>passengers</code></td><td>Individual passengers per booking</td><td>id (PK), booking_id (FK), name, age, gender, status, seat_number</td><td>N:1 with bookings</td></tr>
+  </table>
+
+  <h3>8.3 Key Database Queries (JPQL)</h3>
+  <table>
+    <tr><th>Query</th><th>Purpose</th><th>Used In</th></tr>
+    <tr>
+      <td><code>SELECT COUNT(p) FROM Passenger p WHERE ... AND p.status = 'CONFIRMED'</code></td>
+      <td>Count occupied seats per train/class/date</td>
+      <td>BookingRepository.countBookedSeats()</td>
+    </tr>
+    <tr>
+      <td><code>SELECT p.seatNumber FROM Passenger p WHERE ... AND p.status = 'CONFIRMED'</code></td>
+      <td>Find taken seat numbers for allotment</td>
+      <td>BookingRepository.findTakenSeatNumbers()</td>
+    </tr>
+    <tr>
+      <td><code>SELECT t FROM Train t WHERE ... AND :day MEMBER OF t.runsOn</code></td>
+      <td>Search trains by endpoints + day of week</td>
+      <td>TrainRepository.findByEndpointsOnDay()</td>
+    </tr>
+    <tr>
+      <td><code>SELECT DISTINCT t FROM Train t JOIN t.stops boarding JOIN t.stops dropping WHERE ... AND boarding.stopOrder < dropping.stopOrder</code></td>
+      <td>Intermediate station search (direction-aware)</td>
+      <td>TrainRepository.searchByStopsOnDay()</td>
+    </tr>
+    <tr>
+      <td><code>SELECT t FROM Train t WHERE t.id = :id [PESSIMISTIC_WRITE]</code></td>
+      <td>Acquire row lock for concurrent booking safety</td>
+      <td>TrainRepository.findByIdForUpdate()</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 9 — MODULE DESCRIPTION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 9: Module Description</h2>
+
+  <h3>9.1 Backend Modules</h3>
+
+  <h4>Module 1: Authentication &amp; User Management</h4>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Files</td><td>AuthController, UserService, UserRepository, JwtUtil, JwtFilter, SecurityConfig</td></tr>
+    <tr><td>Functionality</td><td>Registration, login (JWT issuance), forgot/reset password, profile update, change password</td></tr>
+    <tr><td>Security</td><td>BCrypt password hashing, HS256 JWT signing, role-based access (ROLE_USER, ROLE_ADMIN)</td></tr>
+    <tr><td>Key Design</td><td>Stateless auth — no HTTP sessions. Token carries email + role. JwtFilter validates on every request.</td></tr>
+  </table>
+
+  <h4>Module 2: Train Management</h4>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Files</td><td>TrainController, TrainService, TrainRepository, Train, TrainClass, TrainStop, SeatClass, DataSeeder</td></tr>
+    <tr><td>Functionality</td><td>CRUD operations on trains (admin only), search by source/destination/date, intermediate station routing</td></tr>
+    <tr><td>Key Design</td><td>Separate TrainClass entity for per-class capacity/fare. TrainStop with stopOrder and distance for route modelling. Day-of-week filtering via @ElementCollection.</td></tr>
+  </table>
+
+  <h4>Module 3: Booking Engine</h4>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Files</td><td>BookingController, BookingService, BookingRepository, Booking, Passenger, Dtos.java</td></tr>
+    <tr><td>Functionality</td><td>Ticket booking (1-6 passengers), seat allotment, waitlist management, full/partial cancellation, PNR generation</td></tr>
+    <tr><td>Key Design</td><td>Pessimistic locking prevents overselling. Fare locked at booking time. Status derived from passengers. Available seats computed (not stored).</td></tr>
+  </table>
+
+  <h4>Module 4: Payment Integration</h4>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Files</td><td>PaymentController, PaymentService</td></tr>
+    <tr><td>Functionality</td><td>Razorpay order creation, HMAC-SHA256 signature verification, refund processing</td></tr>
+    <tr><td>Key Design</td><td>Server-side signature verification prevents frontend tampering. Payment toggleable via config. Refund before DB save ensures atomicity.</td></tr>
+  </table>
+
+  <h4>Module 5: Notification Service</h4>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Files</td><td>NotificationService</td></tr>
+    <tr><td>Functionality</td><td>Email notifications for booking confirmation, cancellation, waitlist promotion, password reset</td></tr>
+    <tr><td>Key Design</td><td>Toggled via app.mail.enabled config. Graceful fallback to console logging. Wrapped in try-catch to never break bookings.</td></tr>
+  </table>
+
+  <h4>Module 6: Cross-Cutting Concerns</h4>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>Files</td><td>LoggingAspect, GlobalExceptionHandler</td></tr>
+    <tr><td>Functionality</td><td>AOP-based controller method logging with execution time. Centralized exception handling with meaningful HTTP responses.</td></tr>
+    <tr><td>Key Design</td><td>@Around advice on controller pointcut. Single aspect handles all cross-cutting logging.</td></tr>
+  </table>
+
+  <h3>9.2 Frontend Modules</h3>
+  <table>
+    <tr><th>Module</th><th>Files</th><th>Description</th></tr>
+    <tr><td>App Shell</td><td>App.jsx, main.jsx, Navbar.jsx, index.css</td><td>Route definitions, navigation bar with role-based links, global styling</td></tr>
+    <tr><td>Authentication</td><td>Login.jsx, Register.jsx, ForgotPassword.jsx, ResetPassword.jsx</td><td>Auth forms with Axios calls, token storage in localStorage &amp; Redux</td></tr>
+    <tr><td>Train Search &amp; Booking</td><td>Trains.jsx</td><td>Search form, results display with class availability, passenger entry modal, Razorpay checkout integration</td></tr>
+    <tr><td>Booking Management</td><td>MyBookings.jsx</td><td>View bookings (upcoming/past), cancel booking/passenger, pay pending bookings</td></tr>
+    <tr><td>User Profile</td><td>Profile.jsx</td><td>Edit name/phone, change password</td></tr>
+    <tr><td>Admin</td><td>AdminTrains.jsx, AllBookings.jsx, CreateAdmin.jsx</td><td>Train CRUD with classes and stops, view all system bookings, create admin accounts</td></tr>
+    <tr><td>AI Chatbot</td><td>Chatbot.jsx, Chatbot.css</td><td>Floating chat widget, message history, API integration with GenAI service</td></tr>
+    <tr><td>State Management</td><td>store.js</td><td>Redux store with authReducer (LOGIN, LOGOUT, UPDATE_USER actions)</td></tr>
+    <tr><td>API Layer</td><td>api.js, payment.js</td><td>Axios instance with JWT interceptor, Razorpay script loader</td></tr>
+  </table>
+
+  <h3>9.3 API Gateway Module</h3>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>File</td><td>server.js</td></tr>
+    <tr><td>Technology</td><td>Express 5 + http-proxy-middleware</td></tr>
+    <tr><td>Routing</td><td><code>/api/genai/*</code> → FastAPI (port 8083), <code>/api/*</code> → Spring Boot (port 8081)</td></tr>
+    <tr><td>Features</td><td>CORS configuration for frontend origin, path rewriting</td></tr>
+  </table>
+
+  <h3>9.4 GenAI Service Module</h3>
+  <table>
+    <tr><th>Aspect</th><th>Details</th></tr>
+    <tr><td>File</td><td>main.py</td></tr>
+    <tr><td>Technology</td><td>FastAPI + LangChain + ChatGroq</td></tr>
+    <tr><td>LLM</td><td>Groq Cloud — LLaMA 3.3 70B Versatile (temperature 0.3)</td></tr>
+    <tr><td>Flow</td><td>Receives user message → Fetches live train data from Spring Boot → Constructs system prompt with real data → Invokes LLM → Returns response</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 10 — USER FLOW
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 10: Complete User Flow</h2>
+
+  <h3>10.1 Passenger (User) Flow</h3>
+  <div class="mermaid">
+graph TD
+    Start([User opens RailSathi]) --> Home[Home Page — Train Search]
+    Home --> Search[Enter Source, Destination, Date]
+    Search --> Results{Trains Found?}
+    Results -- No --> NoTrain[No trains available message]
+    NoTrain --> Search
+    Results -- Yes --> ViewTrains[View trains with class availability]
+    ViewTrains --> SelectClass[Select travel class]
+    SelectClass --> CheckLogin{Logged in?}
+    CheckLogin -- No --> LoginPage[Login / Register Page]
+    LoginPage --> LoginForm[Enter credentials]
+    LoginForm --> AuthSuccess{Auth Success?}
+    AuthSuccess -- No --> LoginForm
+    AuthSuccess -- Yes --> ViewTrains
+    CheckLogin -- Yes --> EnterPax[Enter passenger details 1-6]
+    EnterPax --> CheckAvail{Seats available?}
+    CheckAvail -- Yes --> BookConfirm[Book - seats allotted]
+    CheckAvail -- No --> WaitlistOpt{Join Waitlist?}
+    WaitlistOpt -- No --> ViewTrains
+    WaitlistOpt -- Yes --> BookWL[Book - waitlisted]
+    BookConfirm --> PayCheck{Payment enabled?}
+    BookWL --> PayCheck
+    PayCheck -- No --> DirectConfirm[Booking CONFIRMED]
+    PayCheck -- Yes --> RazorpayPopup[Razorpay Checkout]
+    RazorpayPopup --> PayResult{Payment OK?}
+    PayResult -- No --> PendingBooking[Booking stays PENDING]
+    PayResult -- Yes --> VerifySig[Server verifies HMAC signature]
+    VerifySig --> DirectConfirm
+    DirectConfirm --> EmailSent[Confirmation email sent]
+    EmailSent --> MyBookings[View My Bookings]
+    PendingBooking --> MyBookings
+
+    MyBookings --> CancelOpt{Cancel?}
+    CancelOpt -- Full --> CancelAll[Cancel entire booking]
+    CancelOpt -- Partial --> CancelPax[Cancel single passenger]
+    CancelAll --> RefundCheck{Was paid?}
+    CancelPax --> RefundCheck
+    RefundCheck -- Yes --> Refund[Razorpay refund issued]
+    RefundCheck -- No --> StatusUpdate[Update status]
+    Refund --> StatusUpdate
+    StatusUpdate --> WLPromo{Waitlist exists?}
+    WLPromo -- Yes --> Promote[Promote WL → CONFIRMED]
+    WLPromo -- No --> Done([Done])
+    Promote --> Done
+  </div>
+  <p class="diagram-caption">Fig 10.1 — Complete Passenger User Flow</p>
+
+  <h3>10.2 Admin Flow</h3>
+  <div class="mermaid">
+graph TD
+    AdminLogin([Admin Login]) --> Dashboard[Admin Dashboard — Manage Trains]
+    Dashboard --> AddTrain[Add New Train]
+    AddTrain --> TrainDetails[Enter train number, name, source, destination, timings, run days]
+    TrainDetails --> AddClasses[Add classes - 1AC, 2AC, 3AC, Sleeper, General with seats & fare]
+    AddClasses --> AddStops[Add route stops with station, timings, distance]
+    AddStops --> SaveTrain[Save Train]
+    SaveTrain --> Dashboard
+
+    Dashboard --> EditTrain[Edit Existing Train]
+    EditTrain --> ModifyDetails[Modify details, classes, stops]
+    ModifyDetails --> SaveTrain
+
+    Dashboard --> DeleteTrain[Delete Train]
+    DeleteTrain --> Dashboard
+
+    Dashboard --> ViewAllBookings[View All Bookings]
+    ViewAllBookings --> BookingDetails[See all users' bookings with passengers]
+
+    Dashboard --> CreateAdmin[Create New Admin]
+    CreateAdmin --> AdminForm[Enter name, email, password]
+    AdminForm --> AdminCreated[New admin account created]
+    AdminCreated --> Dashboard
+  </div>
+  <p class="diagram-caption">Fig 10.2 — Admin User Flow</p>
+
+  <h3>10.3 AI Chatbot Flow</h3>
+  <div class="mermaid">
+graph LR
+    User[User types question] --> Chatbot[Chatbot Component]
+    Chatbot --> Gateway[API Gateway /api/genai/chat]
+    Gateway --> FastAPI[FastAPI Service]
+    FastAPI --> FetchTrains[Fetch live train data from Spring Boot]
+    FetchTrains --> BuildPrompt[Build system prompt with real train data]
+    BuildPrompt --> GroqLLM[Send to Groq LLaMA 3.3 70B]
+    GroqLLM --> Response[AI Response]
+    Response --> FastAPI
+    FastAPI --> Gateway
+    Gateway --> Chatbot
+    Chatbot --> Display[Display reply in chat window]
+  </div>
+  <p class="diagram-caption">Fig 10.3 — AI Chatbot Data Flow</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 11 — REST API SPECIFICATION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 11: REST API Specification</h2>
+
+  <h3>11.1 Authentication APIs</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th><th>Request Body</th></tr>
+    <tr><td>POST</td><td>/api/auth/register</td><td>Public</td><td>Create new user account</td><td>{name, email, password}</td></tr>
+    <tr><td>POST</td><td>/api/auth/login</td><td>Public</td><td>Authenticate and receive JWT</td><td>{email, password}</td></tr>
+    <tr><td>POST</td><td>/api/auth/forgot-password</td><td>Public</td><td>Send password reset link via email</td><td>{email}</td></tr>
+    <tr><td>POST</td><td>/api/auth/reset-password</td><td>Public</td><td>Set new password using reset token</td><td>{token, newPassword}</td></tr>
+    <tr><td>GET</td><td>/api/auth/me</td><td>Logged in</td><td>Get current user profile</td><td>—</td></tr>
+    <tr><td>PUT</td><td>/api/auth/profile</td><td>Logged in</td><td>Update name &amp; phone</td><td>{name, phone}</td></tr>
+    <tr><td>PUT</td><td>/api/auth/password</td><td>Logged in</td><td>Change password</td><td>{currentPassword, newPassword}</td></tr>
+  </table>
+
+  <h3>11.2 Train APIs</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+    <tr><td>GET</td><td>/api/trains?source=&amp;destination=&amp;date=</td><td>Public</td><td>Search trains with availability</td></tr>
+    <tr><td>POST</td><td>/api/trains</td><td>ADMIN</td><td>Add new train with classes and stops</td></tr>
+    <tr><td>PUT</td><td>/api/trains/{id}</td><td>ADMIN</td><td>Update train details</td></tr>
+    <tr><td>DELETE</td><td>/api/trains/{id}</td><td>ADMIN</td><td>Delete train</td></tr>
+  </table>
+
+  <h3>11.3 Booking APIs</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+    <tr><td>POST</td><td>/api/bookings</td><td>Logged in</td><td>Book ticket with passenger list</td></tr>
+    <tr><td>GET</td><td>/api/bookings/my</td><td>Logged in</td><td>Get current user's bookings</td></tr>
+    <tr><td>GET</td><td>/api/bookings/all</td><td>ADMIN</td><td>Get all bookings in the system</td></tr>
+    <tr><td>PUT</td><td>/api/bookings/{id}/pay</td><td>Logged in</td><td>Verify Razorpay payment, confirm booking</td></tr>
+    <tr><td>PUT</td><td>/api/bookings/{id}/cancel</td><td>Logged in</td><td>Cancel entire booking (with refund)</td></tr>
+    <tr><td>PUT</td><td>/api/bookings/{id}/passengers/{pid}/cancel</td><td>Logged in</td><td>Cancel single passenger (partial cancellation)</td></tr>
+  </table>
+
+  <h3>11.4 Payment &amp; Admin APIs</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+    <tr><td>GET</td><td>/api/payments/config</td><td>Logged in</td><td>Payment enabled flag + Razorpay public key</td></tr>
+    <tr><td>POST</td><td>/api/admin/create-admin</td><td>ADMIN</td><td>Create a new admin account</td></tr>
+  </table>
+
+  <h3>11.5 GenAI API</h3>
+  <table>
+    <tr><th>Method</th><th>Endpoint</th><th>Access</th><th>Description</th></tr>
+    <tr><td>POST</td><td>/api/genai/chat</td><td>Public</td><td>Send message to AI chatbot, receive response</td></tr>
+  </table>
+
+  <h3>11.6 Sample Request / Response</h3>
+  <h4>Booking Request:</h4>
+  <pre>{
+  "trainId": 1,
+  "seatClass": "AC3",
+  "journeyDate": "2026-08-15",
+  "allowWaitlist": false,
+  "fromStation": "Bhopal",
+  "toStation": "Nagpur",
+  "passengers": [
+    { "name": "Amit", "age": 25, "gender": "Male" },
+    { "name": "Neha", "age": 23, "gender": "Female" }
+  ]
+}</pre>
+
+  <h4>Authentication Response:</h4>
+  <pre>{
+  "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1c2VyQGV...",
+  "name": "Amit Kumar",
+  "email": "amit@example.com",
+  "role": "USER"
+}</pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 12 — IMPLEMENTATION DETAILS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 12: Implementation Details</h2>
+
+  <h3>12.1 Concurrency Control — Pessimistic Locking</h3>
+  <p>The most critical engineering challenge is preventing two users from booking the last available seat simultaneously. RailSathi solves this with a <strong>pessimistic write lock</strong>:</p>
+  <pre>// TrainRepository.java
+@Lock(LockModeType.PESSIMISTIC_WRITE)
+@Query("SELECT t FROM Train t WHERE t.id = :id")
+Optional&lt;Train&gt; findByIdForUpdate(@Param("id") Long id);</pre>
+  <p>At the start of <code>BookingService.book()</code>, the train row is locked with <code>SELECT ... FOR UPDATE</code>. Since the method is <code>@Transactional</code>, the lock is held until the transaction commits. A concurrent booking for the <em>same train</em> blocks on the lock, then re-counts seats and correctly sees the updated availability. Bookings for <em>different trains</em> lock different rows, so they proceed in parallel.</p>
+
+  <h3>12.2 Seat Availability — Computed, Not Stored</h3>
+  <pre>available = classCapacity - COUNT(CONFIRMED passengers on train+class+date)</pre>
+  <p>This approach ensures that cancellations (even partial) automatically free seats without maintaining a counter. The database is always the source of truth.</p>
+
+  <h3>12.3 Part-Journey Fare Calculation</h3>
+  <pre>segmentFare = classFare × (toKm − fromKm) / (lastStopKm − firstStopKm)</pre>
+  <p>The <code>fareShare()</code> method on the <code>Train</code> entity computes the proportional fare using the <code>distanceFromSource</code> values from the <code>TrainStop</code> entities. This is used both for displaying fares in search results and for locking the fare at booking time.</p>
+
+  <h3>12.4 Payment Security — HMAC-SHA256 Verification</h3>
+  <p>The Razorpay checkout runs entirely in the browser. To prevent a tampered frontend from faking a payment:</p>
+  <ol>
+    <li>Backend creates a Razorpay <em>order</em> (server-to-server with the secret key)</li>
+    <li>Frontend opens the Razorpay popup, collects payment</li>
+    <li>Razorpay signs <code>orderId|paymentId</code> with the secret key (HMAC-SHA256)</li>
+    <li>Frontend sends paymentId + signature to <code>/api/bookings/{id}/pay</code></li>
+    <li>Backend recomputes the signature with its copy of the secret key</li>
+    <li>Only if signatures match is the booking marked CONFIRMED</li>
+  </ol>
+
+  <h3>12.5 Waitlist Promotion Algorithm</h3>
+  <ol>
+    <li>When a seat is freed (cancellation), <code>promoteFromWaitlist()</code> is called</li>
+    <li>Fetch the waitlist queue ordered by waitlistNumber ASC</li>
+    <li>For each freed seat, promote the earliest waiting passenger:
+      <ul>
+        <li>Change status from WAITLISTED → CONFIRMED</li>
+        <li>Assign the freed seat number</li>
+        <li>Clear waitlistNumber</li>
+      </ul>
+    </li>
+    <li>Renumber remaining waitlisted passengers (WL3 → WL2, etc.)</li>
+    <li>Send promotion email to each promoted passenger's booking user</li>
+    <li>Recompute the booking status of all affected bookings</li>
+  </ol>
+
+  <h3>12.6 Email Enumeration Prevention</h3>
+  <p>The forgot-password endpoint returns the same message ("If that email is registered, a reset link has been sent") for both registered and unregistered emails. This prevents attackers from scripting address enumeration. The same principle applies to login ("Invalid email or password" — not distinguishing which is wrong).</p>
+
+  <h3>12.7 DTO Pattern</h3>
+  <p>Controllers return <code>BookingResponse</code> / <code>PassengerResponse</code> record DTOs instead of raw JPA entities. Benefits:</p>
+  <ul>
+    <li>API shape is explicit and decoupled from the database schema</li>
+    <li>Prevents leaking nested entities (e.g., User inside Booking) into JSON</li>
+    <li>Avoids lazy-loading / infinite recursion issues during serialization</li>
+    <li>Java records are immutable and concise</li>
+  </ul>
+
+  <h3>12.8 Redux State Management</h3>
+  <p>Redux is used <em>only</em> for authentication state (logged-in user), which is needed by multiple components (Navbar, route guards, booking page). Page-local data (train search results, form fields) uses React's <code>useState</code> — avoiding unnecessary Redux boilerplate.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 13 — TESTING
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 13: Testing</h2>
+
+  <h3>13.1 Testing Strategy</h3>
+  <table>
+    <tr><th>Test Type</th><th>Tool</th><th>Scope</th></tr>
+    <tr><td>Unit Testing</td><td>JUnit 5 + Mockito</td><td>BookingService business logic — seat allotment, fare calculation, cancellation</td></tr>
+    <tr><td>Concurrency Testing</td><td>JUnit 5 + H2 (in-memory DB)</td><td>Proves pessimistic lock prevents overselling (12 threads race for 5 seats)</td></tr>
+    <tr><td>API Testing</td><td>Postman</td><td>Manual endpoint validation for all REST APIs</td></tr>
+    <tr><td>Integration Testing</td><td>Spring Boot Test</td><td>End-to-end with embedded H2 database</td></tr>
+    <tr><td>UI Testing</td><td>Manual / Browser DevTools</td><td>All user flows, responsive layout, error handling</td></tr>
+  </table>
+
+  <h3>13.2 Unit Test Cases</h3>
+  <table>
+    <tr><th class="sr-no">Sr.</th><th>Test Case</th><th>Expected Result</th><th>Status</th></tr>
+    <tr><td class="sr-no">1</td><td>Register with valid details</td><td>User created, 200 OK</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">2</td><td>Register with duplicate email</td><td>400 Bad Request, "Email is already registered"</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">3</td><td>Login with correct credentials</td><td>JWT token returned</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">4</td><td>Login with wrong password</td><td>401 Unauthorized</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">5</td><td>Search trains by endpoints</td><td>Matching trains with availability</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">6</td><td>Search by intermediate stations</td><td>Only trains with correct stop order returned</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">7</td><td>Book ticket — seats available</td><td>Booking CONFIRMED, seats allotted</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">8</td><td>Book ticket — class full, no waitlist</td><td>400 "No seats available"</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">9</td><td>Book ticket — class full, waitlist allowed</td><td>Booking WAITLISTED, WL numbers assigned</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">10</td><td>Cancel single passenger</td><td>Seat freed, status PARTIALLY_CANCELLED</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">11</td><td>Cancel all passengers</td><td>Status CANCELLED, refund issued</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">12</td><td>Cancellation promotes waitlisted passenger</td><td>WL1 becomes CONFIRMED with seat number</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">13</td><td>Concurrent booking — 12 threads, 5 seats</td><td>Exactly 5 succeed, 7 fail (no overselling)</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">14</td><td>Part-journey fare calculation</td><td>Fare proportional to distance travelled</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">15</td><td>Admin creates another admin</td><td>New admin account created</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">16</td><td>Non-admin accesses admin endpoint</td><td>403 Forbidden</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">17</td><td>Forgot password — registered email</td><td>Reset token generated, email sent</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">18</td><td>Forgot password — unknown email</td><td>Same success message (prevents enumeration)</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">19</td><td>Reset password with expired token</td><td>400 "Token expired"</td><td>✅ Pass</td></tr>
+    <tr><td class="sr-no">20</td><td>AI chatbot responds with train data</td><td>Relevant answer with real train information</td><td>✅ Pass</td></tr>
+  </table>
+
+  <h3>13.3 Running Tests</h3>
+  <pre>cd backend
+mvn test</pre>
+  <p>Runs BookingServiceTest (Mockito unit tests) plus BookingConcurrencyTest (multi-threaded integration test with in-memory H2 database). All tests pass successfully.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 14 — FUTURE ENHANCEMENTS
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 14: Future Enhancements</h2>
+
+  <table>
+    <tr><th class="sr-no">Sr.</th><th>Enhancement</th><th>Description</th></tr>
+    <tr><td class="sr-no">1</td><td>Segment-based seat availability</td><td>Currently seats are held for the entire train run. Enhancement: make availability an interval-overlap problem, allowing the same seat to be reused on disjoint segments (e.g., seat freed at Nagpur can be rebooked Nagpur→Bengaluru).</td></tr>
+    <tr><td class="sr-no">2</td><td>Tatkal booking</td><td>Implement premium quota booking with higher fares and time-window restrictions, similar to IRCTC's Tatkal scheme.</td></tr>
+    <tr><td class="sr-no">3</td><td>PNR Status Check</td><td>Public endpoint to check booking status by PNR number without logging in.</td></tr>
+    <tr><td class="sr-no">4</td><td>Live train tracking</td><td>Integration with real-time train position APIs for live location tracking on a map.</td></tr>
+    <tr><td class="sr-no">5</td><td>Mobile responsive PWA</td><td>Convert the React frontend into a Progressive Web App with offline support and push notifications.</td></tr>
+    <tr><td class="sr-no">6</td><td>Containerization</td><td>Dockerize all four services with Docker Compose for one-command deployment. Add CI/CD with Jenkins/GitHub Actions.</td></tr>
+    <tr><td class="sr-no">7</td><td>RAG-based chatbot</td><td>Enhance the AI chatbot with Retrieval-Augmented Generation (RAG) for querying booking-specific and policy-related information.</td></tr>
+    <tr><td class="sr-no">8</td><td>Multi-language support</td><td>i18n support for Hindi, Marathi, and other regional languages.</td></tr>
+    <tr><td class="sr-no">9</td><td>Ticket PDF generation</td><td>Generate downloadable PDF e-tickets with QR codes for each confirmed booking.</td></tr>
+    <tr><td class="sr-no">10</td><td>Analytics Dashboard</td><td>Admin analytics with booking trends, revenue reports, and occupancy charts.</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 15 — CONCLUSION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 15: Conclusion</h2>
+
+  <p><strong>RailSathi</strong> successfully demonstrates the design and implementation of a production-grade, AI-enhanced railway reservation system that integrates all core technologies covered in the CDAC PG-CP AC curriculum.</p>
+
+  <p>Through this project, the team gained hands-on experience with:</p>
+  <ul>
+    <li><strong>Full-stack development</strong> — building a decoupled React frontend communicating with a Spring Boot REST API through a Node.js API gateway</li>
+    <li><strong>Relational database modelling</strong> — designing a normalised schema with complex relationships (trains → classes → stops → bookings → passengers)</li>
+    <li><strong>Security engineering</strong> — implementing JWT-based stateless authentication, BCrypt password hashing, role-based access control, and HMAC payment verification</li>
+    <li><strong>Concurrency control</strong> — using pessimistic database locking to prevent data integrity issues in high-contention scenarios</li>
+    <li><strong>Third-party integration</strong> — integrating Razorpay for payments, Gmail SMTP for notifications, and Groq LLM for AI-powered chat</li>
+    <li><strong>Software engineering practices</strong> — clean layered architecture, DTO pattern, AOP cross-cutting concerns, comprehensive testing with Mockito and concurrency tests</li>
+    <li><strong>AI/ML integration</strong> — connecting a large language model to live application data through a context-aware prompt engineering approach</li>
+  </ul>
+
+  <p>The system handles real-world complexity including intermediate-station routing, distance-proportional fare calculation, waitlist management with automatic promotion, partial cancellation with proportional refunds, and email enumeration prevention — going well beyond a basic CRUD application.</p>
+
+  <p>RailSathi serves as a strong foundation that can be extended with features like segment-based availability, Tatkal booking, live tracking, and containerised deployment to approach production readiness.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 16 — REFERENCES
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 16: References</h2>
+
+  <ol>
+    <li>Spring Boot Documentation — <a href="https://docs.spring.io/spring-boot/docs/current/reference/html/">https://docs.spring.io/spring-boot/</a></li>
+    <li>Spring Data JPA Reference — <a href="https://docs.spring.io/spring-data/jpa/docs/current/reference/html/">https://docs.spring.io/spring-data/jpa/</a></li>
+    <li>Spring Security Reference — <a href="https://docs.spring.io/spring-security/reference/">https://docs.spring.io/spring-security/</a></li>
+    <li>React Documentation — <a href="https://react.dev/">https://react.dev/</a></li>
+    <li>Redux Documentation — <a href="https://redux.js.org/">https://redux.js.org/</a></li>
+    <li>React Router Documentation — <a href="https://reactrouter.com/">https://reactrouter.com/</a></li>
+    <li>Vite Documentation — <a href="https://vite.dev/">https://vite.dev/</a></li>
+    <li>MySQL 8 Reference Manual — <a href="https://dev.mysql.com/doc/refman/8.0/en/">https://dev.mysql.com/doc/refman/8.0/</a></li>
+    <li>Razorpay Documentation — <a href="https://razorpay.com/docs/">https://razorpay.com/docs/</a></li>
+    <li>FastAPI Documentation — <a href="https://fastapi.tiangolo.com/">https://fastapi.tiangolo.com/</a></li>
+    <li>LangChain Documentation — <a href="https://python.langchain.com/">https://python.langchain.com/</a></li>
+    <li>Groq API Documentation — <a href="https://console.groq.com/docs/">https://console.groq.com/docs/</a></li>
+    <li>JSON Web Token (JWT) — RFC 7519 — <a href="https://datatracker.ietf.org/doc/html/rfc7519">https://datatracker.ietf.org/doc/html/rfc7519</a></li>
+    <li>jjwt Library — <a href="https://github.com/jwtk/jjwt">https://github.com/jwtk/jjwt</a></li>
+    <li>Lombok Project — <a href="https://projectlombok.org/">https://projectlombok.org/</a></li>
+    <li>Express.js Documentation — <a href="https://expressjs.com/">https://expressjs.com/</a></li>
+    <li>http-proxy-middleware — <a href="https://github.com/chimurai/http-proxy-middleware">https://github.com/chimurai/http-proxy-middleware</a></li>
+    <li>IRCTC — Indian Railway Catering and Tourism Corporation — <a href="https://www.irctc.co.in/">https://www.irctc.co.in/</a></li>
+  </ol>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     CHAPTER 17 — TEAM CONTRIBUTION
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Chapter 17: Team Contribution</h2>
+
+  <table>
+    <tr><th class="sr-no">Sr.</th><th>Team Member</th><th>Primary Responsibility</th><th>Modules Contributed</th></tr>
+    <tr>
+      <td class="sr-no">1</td>
+      <td>Ayush Phapale</td>
+      <td>Database Design &amp; Entity Layer</td>
+      <td>ER diagram design, JPA entities (User, Train, TrainClass, TrainStop, Booking, Passenger), repositories, DataSeeder, MySQL schema</td>
+    </tr>
+    <tr>
+      <td class="sr-no">2</td>
+      <td>Komal Chavan</td>
+      <td>Business Logic &amp; Services</td>
+      <td>BookingService (seat allotment, waitlist, cancellation, fare calculation), TrainService (search, CRUD), unit tests (Mockito), concurrency test</td>
+    </tr>
+    <tr>
+      <td class="sr-no">3</td>
+      <td>Mitali Raut</td>
+      <td>Security, AOP &amp; Exception Handling</td>
+      <td>JwtUtil, JwtFilter, SecurityConfig (role-based access), BCrypt integration, LoggingAspect (AOP), GlobalExceptionHandler, PaymentService (Razorpay), NotificationService (email)</td>
+    </tr>
+    <tr>
+      <td class="sr-no">4</td>
+      <td>Pratik Chavan</td>
+      <td>React Frontend — Auth &amp; Booking</td>
+      <td>Login, Register, ForgotPassword, ResetPassword pages. Trains page (search + booking modal + Razorpay checkout). MyBookings page (view, cancel, pay). API Gateway (Express). GenAI Service (FastAPI + LangChain + Groq).</td>
+    </tr>
+    <tr>
+      <td class="sr-no">5</td>
+      <td>Pratik Dhopte</td>
+      <td>React Frontend — Admin, State &amp; Styling</td>
+      <td>Redux store (authReducer), React Router (route guards), Navbar, AdminTrains page (train CRUD with classes/stops), AllBookings, CreateAdmin, Profile page, Chatbot component, index.css (complete application styling)</td>
+    </tr>
+  </table>
+
+  <p class="note" style="margin-top:12pt;"><strong>Note:</strong> While each member had a primary responsibility, all team members contributed to code reviews, testing, and debugging across all modules. Every member can explain the complete system end-to-end.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     APPENDIX A — PROJECT DIRECTORY STRUCTURE
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Appendix A: Project Directory Structure</h2>
+  <pre>
+TrainWithGenAi/
+├── api-gateway/                    # Node.js Express API Gateway (port 8080)
+│   ├── server.js                   # Proxy routing: /api/genai → FastAPI, /api → Spring Boot
+│   ├── package.json                # Express, http-proxy-middleware, cors, dotenv
+│   └── .env                        # FRONTEND_URL, SPRING_BOOT_URL, FASTAPI_URL
+│
+├── backend/                        # Spring Boot 3.5 REST API (port 8081)
+│   ├── pom.xml                     # Maven dependencies (JPA, Security, AOP, Mail, JWT, Lombok)
+│   └── src/main/java/com/eureka/railway/
+│       ├── RailwayApplication.java # Spring Boot entry point
+│       ├── entity/                 # JPA Entities
+│       │   ├── User.java           # users table (id, name, email, password, role)
+│       │   ├── Train.java          # trains table (trainNumber, source, destination, timings)
+│       │   ├── TrainClass.java     # train_classes table (seatClass, totalSeats, fare)
+│       │   ├── TrainStop.java      # train_stops table (station, stopOrder, distance)
+│       │   ├── Booking.java        # bookings table (pnr, journeyDate, fare, status, razorpay)
+│       │   ├── Passenger.java      # passengers table (name, age, gender, seatNumber, status)
+│       │   └── SeatClass.java      # Enum: AC1, AC2, AC3, SLEEPER, GENERAL
+│       ├── repository/             # Spring Data JPA Repositories
+│       │   ├── UserRepository.java
+│       │   ├── TrainRepository.java    # pessimistic lock, intermediate station search
+│       │   └── BookingRepository.java  # custom JPQL: countBookedSeats, findTakenSeatNumbers
+│       ├── service/                # Business Logic Layer
+│       │   ├── UserService.java        # auth, profile, password reset
+│       │   ├── TrainService.java       # CRUD, search with availability
+│       │   ├── BookingService.java     # booking, cancellation, waitlist, seat allotment
+│       │   ├── PaymentService.java     # Razorpay order/verify/refund
+│       │   └── NotificationService.java # email notifications (Gmail SMTP)
+│       ├── controller/             # REST Controllers
+│       │   ├── AuthController.java
+│       │   ├── TrainController.java
+│       │   ├── BookingController.java
+│       │   ├── PaymentController.java
+│       │   ├── AdminController.java
+│       │   └── GlobalExceptionHandler.java
+│       ├── security/               # JWT + Spring Security
+│       │   ├── JwtUtil.java            # token generation & validation (HS256)
+│       │   ├── JwtFilter.java          # per-request token filter
+│       │   └── SecurityConfig.java     # filter chain, CORS, role-based rules
+│       ├── aspect/
+│       │   └── LoggingAspect.java      # AOP @Around advice on controllers
+│       ├── config/
+│       │   └── DataSeeder.java         # seeds admin + sample trains on first run
+│       └── dto/
+│           └── Dtos.java               # request/response records
+│
+├── frontend/                       # React 18 SPA (Vite, port 5173)
+│   ├── package.json                # React, Redux, Router, Axios, Toastify, React Icons
+│   ├── vite.config.js
+│   └── src/
+│       ├── App.jsx                 # Route definitions with role-based guards
+│       ├── main.jsx                # ReactDOM.createRoot + Provider + BrowserRouter
+│       ├── store.js                # Redux store (authReducer: LOGIN, LOGOUT, UPDATE_USER)
+│       ├── api.js                  # Axios instance with JWT interceptor
+│       ├── payment.js              # Razorpay script loader
+│       ├── index.css               # Complete application styles
+│       ├── pages/                  # Page Components
+│       │   ├── Login.jsx, Register.jsx, ForgotPassword.jsx, ResetPassword.jsx
+│       │   ├── Trains.jsx          # Search + booking + Razorpay checkout
+│       │   ├── MyBookings.jsx      # View/cancel bookings
+│       │   ├── Profile.jsx         # Edit profile, change password
+│       │   ├── AdminTrains.jsx     # Train CRUD (classes + stops)
+│       │   ├── AllBookings.jsx     # Admin: view all bookings
+│       │   ├── CreateAdmin.jsx     # Admin: create admin account
+│       │   └── About.jsx           # About page
+│       └── components/
+│           ├── Navbar.jsx          # Role-based navigation bar
+│           ├── Chatbot.jsx         # Floating AI chat widget
+│           └── Chatbot.css
+│
+├── genai-service/                  # Python FastAPI GenAI Service (port 8083)
+│   ├── main.py                     # /chat endpoint: fetch trains → LLM prompt → response
+│   └── .env                        # GROQ_API_KEY, SPRING_BOOT_URL
+│
+├── README.md                       # Project overview and setup instructions
+├── PROJECT_NOTES.md                # Internal notes, design decisions, viva preparation
+└── .gitignore
+  </pre>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     APPENDIX B — COMPONENT INTERACTION MATRIX
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break">
+  <h2>Appendix B: Component Interaction Matrix</h2>
+
+  <table>
+    <tr>
+      <th>Component</th>
+      <th>React Frontend</th>
+      <th>API Gateway</th>
+      <th>Spring Boot</th>
+      <th>GenAI Service</th>
+      <th>MySQL</th>
+      <th>Razorpay</th>
+      <th>Gmail SMTP</th>
+      <th>Groq API</th>
+    </tr>
+    <tr><td><strong>React Frontend</strong></td><td>—</td><td>HTTP/JSON</td><td>—</td><td>—</td><td>—</td><td>JS SDK</td><td>—</td><td>—</td></tr>
+    <tr><td><strong>API Gateway</strong></td><td>CORS</td><td>—</td><td>Proxy</td><td>Proxy</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+    <tr><td><strong>Spring Boot</strong></td><td>—</td><td>—</td><td>—</td><td>—</td><td>JPA/JDBC</td><td>RestTemplate</td><td>JavaMail</td><td>—</td></tr>
+    <tr><td><strong>GenAI Service</strong></td><td>—</td><td>—</td><td>httpx</td><td>—</td><td>—</td><td>—</td><td>—</td><td>LangChain</td></tr>
+  </table>
+
+  <h2>Appendix C: Default Credentials</h2>
+  <table>
+    <tr><th>Role</th><th>Email</th><th>Password</th><th>Notes</th></tr>
+    <tr><td>Admin</td><td>admin@railway.com</td><td>admin123</td><td>Created by DataSeeder on first run</td></tr>
+    <tr><td>User</td><td>(register via UI)</td><td>—</td><td>Self-registration from the Register page</td></tr>
+  </table>
+
+  <h2>Appendix D: Running the Application</h2>
+  <table>
+    <tr><th>Service</th><th>Directory</th><th>Command</th><th>Port</th></tr>
+    <tr><td>MySQL</td><td>—</td><td>Ensure MySQL is running; DB created automatically</td><td>3306</td></tr>
+    <tr><td>Backend</td><td><code>backend/</code></td><td><code>mvn spring-boot:run</code></td><td>8081</td></tr>
+    <tr><td>GenAI Service</td><td><code>genai-service/</code></td><td><code>python main.py</code></td><td>8083</td></tr>
+    <tr><td>API Gateway</td><td><code>api-gateway/</code></td><td><code>npm start</code></td><td>8080</td></tr>
+    <tr><td>Frontend</td><td><code>frontend/</code></td><td><code>npm run dev</code></td><td>5173</td></tr>
+  </table>
+  <p>Open <a href="http://localhost:5173">http://localhost:5173</a> in a browser to access the application.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     END OF REPORT
+     ══════════════════════════════════════════════════════════════ -->
+<div class="page-break" style="text-align:center; padding-top:200pt;">
+  <hr class="cover-line">
+  <h1 style="color:#0d47a1; font-size:18pt;">— End of Report —</h1>
+  <p style="font-size:12pt; color:#555;">RailSathi — AI-Powered Railway Reservation System</p>
+  <p style="font-size:11pt; color:#888;">CDAC PG-CP AC | 2025–2026</p>
+  <hr class="cover-line">
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'default',
+    securityLevel: 'loose',
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+    sequence: { useMaxWidth: true, showSequenceNumbers: false },
+    er: { useMaxWidth: true },
+    classDiagram: { useMaxWidth: true }
+  });
+</script>
+</body>
+</html>

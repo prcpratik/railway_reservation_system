@@ -19,14 +19,17 @@
 
     <properties>
         <java.version>21</java.version>
-    </properties> 
+    </properties>
 
     <dependencies>
-    	 <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+
+        <!-- generates getters/setters/loggers at compile time.
+             optional=true so it is not shipped as a runtime dependency. -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -56,6 +59,11 @@
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.8.5</version>
         </dependency>
 
         <!-- JWT library -->
