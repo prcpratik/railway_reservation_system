@@ -13,4 +13,20 @@ frontend/dist/
 .settings/
 .project
 .classpath
-/.metadata/
+.factorypath
+
+# genai-service
+genai-service/.venv
+genai-service/myenv/
+genai-service/__pycache__/
+genai-service/.env
+
+# api-gateway
+api-gateway/node_modules/
+
+# Docker
+.env
+
+# OS files
+.DS_Store
+Thumbs.db

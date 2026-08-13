@@ -1,7 +1,5 @@
 package com.eureka.railway.entity;
 
-
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,16 +14,13 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 public class User {
-    
-	//Primary Key 
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //User name
     private String name;
-    
-    //Email field
+
     @Column(unique = true, nullable = false)
     private String email;
 
@@ -39,11 +34,10 @@ public class User {
     // set only while a password reset is in progress; cleared once used
     @JsonIgnore
     private String resetToken;
-    
+
     @JsonIgnore
     private LocalDateTime resetTokenExpiry;
-    
-    //Parameterized constructor
+
     public User(String name, String email, String password, String role) {
         this.name = name;
         this.email = email;

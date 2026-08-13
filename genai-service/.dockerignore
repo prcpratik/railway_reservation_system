@@ -1,0 +1,6 @@
+# Don't send these to Docker
+myenv/
+__pycache__/
+.venv/
+.env
+.vscode/

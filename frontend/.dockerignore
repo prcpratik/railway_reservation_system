@@ -1,0 +1,4 @@
+# Don't send these to Docker
+node_modules/
+dist/
+.vscode/

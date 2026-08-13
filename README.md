@@ -7,14 +7,27 @@ CDAC PG-DAC team project. A simple full-stack railway ticket reservation app.
 | Layer | Technology |
 |---|---|
 | Frontend | React 18 (Vite), React Router, Redux (auth state only), Axios |
-| Backend | Spring Boot 3.5, Spring Web (REST), Spring Data JPA, Spring Security + JWT, Spring AOP, Spring Mail |
+| Backend | Spring Boot 3.5, Spring Web (REST), Spring Data JPA, Spring Security + JWT, Spring AOP, Spring Mail, Lombok |
 | Database | MySQL 8/9 |
 
 ## Features
 
 - Register / login (JWT based, passwords stored BCrypt-hashed)
 - Search trains by source, destination and journey date
-- Live seat availability per date (total seats minus confirmed passengers)
+- **Intermediate stations**: a train carries its full route (station, timings and
+  km from the start). Passengers can search using *any two stations on the route*
+  in travel order, not just the end points
+- **Part-journey fares**: booking a section of the route is charged in proportion
+  to the distance travelled, and the ticket shows the booked stations with the
+  boarding and arrival times at those stops
+- **Travel classes**: each train offers its own set of classes (1AC, 2AC, 3AC,
+  Sleeper, General), each with its own capacity and fare
+- Live seat availability per **class** per journey date (class capacity minus
+  confirmed passengers)
+- **Seat allotment**: every confirmed passenger gets a seat number, unique per
+  train + class + date; cancelling releases the number for reuse
+- **Waitlist**: when a class is full a passenger can join the queue (WL1, WL2, …)
+  and is promoted automatically into the first seat that is freed
 - Book one ticket for up to 6 passengers (name, age, gender each), fare calculated automatically
 - View my bookings with full passenger list
 - **Partial cancellation**: cancel a single passenger (seat freed, fare reduced,
@@ -28,6 +41,8 @@ CDAC PG-DAC team project. A simple full-stack railway ticket reservation app.
   last seat from being sold twice under simultaneous bookings
 - **User profile**: edit name & phone, change password, view booking history
   (upcoming vs past)
+- **Forgot password**: emailed reset link with a random, single-use token that
+  expires in 30 minutes
 - Admin: manage trains (add / edit / delete), view **all bookings**, and
   **create another admin**
 - Role-based access: only ADMIN can manage trains / create admins; only logged-in
@@ -47,6 +62,22 @@ Spring loads it automatically on top of `application.properties`
 (`spring.profiles.active=local`), so nobody's password ever reaches GitHub.
 
 ### 2. Backend (port 8080)
+
+> **Lombok — one-time IDE setup (every team member must do this).**
+> The entities use Lombok's `@Getter`/`@Setter`, which generate code at compile
+> time. Maven builds fine without any setup, but **Eclipse/STS will show red
+> errors** like *"method getName() is undefined"* until Lombok is installed:
+>
+> 1. Find `lombok.jar` in your local Maven repo:
+>    `C:\Users\<you>\.m2\repository\org\projectlombok\lombok\<version>\lombok-<version>.jar`
+> 2. Double-click it (or run `java -jar lombok-<version>.jar`)
+> 3. In the installer, select your Eclipse/STS installation → **Install / Update**
+> 4. **Restart Eclipse**, then Project → Clean
+>
+> IntelliJ IDEA: install the *Lombok* plugin and enable
+> Settings → Build → Compiler → Annotation Processors → *Enable annotation processing*.
+>
+> If you see errors on the entity classes, this step was skipped.
 
 Open the `backend` folder in Eclipse/STS as an *Existing Maven Project* and run
 `RailwayApplication.java`, **or** from the command line (needs Maven):
@@ -81,6 +112,8 @@ Open http://localhost:5173
 |---|---|---|---|
 | POST | /api/auth/register | public | create account |
 | POST | /api/auth/login | public | returns JWT token |
+| POST | /api/auth/forgot-password | public | email a password-reset link |
+| POST | /api/auth/reset-password | public | set a new password using the emailed token |
 | GET | /api/auth/me | logged in | current user's profile |
 | PUT | /api/auth/profile | logged in | update name & phone |
 | PUT | /api/auth/password | logged in | change password (verifies current) |
@@ -102,7 +135,11 @@ Booking request body example:
 ```json
 {
   "trainId": 1,
+  "seatClass": "AC3",
   "journeyDate": "2026-08-01",
+  "allowWaitlist": false,
+  "fromStation": "Bhopal",
+  "toStation": "Nagpur",
   "passengers": [
     { "name": "Amit", "age": 25, "gender": "Male" },
     { "name": "Neha", "age": 23, "gender": "Female" }
@@ -110,8 +147,37 @@ Booking request body example:
 }
 ```
 
+`seatClass` is one of `AC1`, `AC2`, `AC3`, `SLEEPER`, `GENERAL` and must be a
+class that train actually offers. Set `allowWaitlist` to `true` only when the
+user has explicitly chosen to join the queue — otherwise a full class is
+rejected instead of silently waitlisting them.
+
+`fromStation` / `toStation` are optional. Leave them out (or null) to book the
+train's whole route; give two stations from the train's route, in travel order,
+to book and pay for that part only. The fare is the class fare scaled by
+`km travelled / total km` of the route.
+
 Protected calls need the header `Authorization: Bearer <token>`.
 You can try all of these in Postman: login first, copy the token, then add the header.
+
+### Booking and passenger status values
+
+| Booking status | Meaning |
+|---|---|
+| `PENDING` | seats held, awaiting online payment |
+| `CONFIRMED` | every passenger has a seat |
+| `WAITLISTED` | at least one passenger is still in the queue |
+| `PARTIALLY_CANCELLED` | some passengers cancelled, others still travelling |
+| `CANCELLED` | all passengers cancelled |
+
+| Passenger status | Meaning |
+|---|---|
+| `CONFIRMED` | has a seat number |
+| `WAITLISTED` | has a waitlist position (WL1, WL2, …), no seat yet |
+| `CANCELLED` | seat/position released |
+
+The booking status is always **derived** from its passengers, so the two can
+never contradict each other.
 
 ## Razorpay setup (test mode — no real money)
 

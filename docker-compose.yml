@@ -1,0 +1,146 @@
+# ============================================================
+# docker-compose.yml — RailSathi Full Stack
+# ============================================================
+#
+# WHAT IS THIS FILE?
+# ------------------
+# Docker Compose lets you run MULTIPLE containers together
+# with a single command:   docker compose up
+#
+# This file defines 5 services (containers):
+#   1. mysql-db       → MySQL database
+#   2. backend        → Spring Boot REST API (Java)
+#   3. genai-service  → RAG Chatbot (Python/FastAPI)
+#   4. api-gateway    → API Gateway (Node.js/Express)
+#   5. frontend       → React app served by Nginx
+#
+# HOW THEY CONNECT:
+# -----------------
+#   Browser → frontend (port 3000)
+#      ↓  (API calls go to...)
+#   api-gateway (port 8080)
+#      ├──→ backend (port 8081)  ──→  mysql-db (port 3306)
+#      └──→ genai-service (port 8083)
+#
+# HOW TO RUN:
+# -----------
+#   1. Make sure Docker Desktop is installed and running
+#   2. Open a terminal in this folder
+#   3. Run:  docker compose up --build
+#   4. Wait for all services to start (first time takes 5–10 min)
+#   5. Open:  http://localhost:3000
+#
+# HOW TO STOP:
+# ------------
+#   Press Ctrl+C in the terminal, then run:  docker compose down
+#
+# ============================================================
+
+
+services:
+
+  # -------- 1. MySQL Database --------
+  # This replaces the MySQL installed on your laptop.
+  # Data is stored in a "volume" so it survives container restarts.
+  mysql-db:
+    image: mysql:8.0                      # Use official MySQL 8.0 image
+    container_name: railsathi-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123        # Root password (change for production!)
+      MYSQL_DATABASE: eureka_railway      # Create this database automatically
+    ports:
+      - "3307:3306"                       # Map to 3307 on your laptop (3306 may be in use)
+    volumes:
+      - mysql-data:/var/lib/mysql         # Persist data even if container is deleted
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+
+  # -------- 2. Spring Boot Backend --------
+  backend:
+    build:
+      context: ./backend                  # Path to the backend folder
+      dockerfile: Dockerfile              # Use the Dockerfile we created
+    container_name: railsathi-backend
+    ports:
+      - "8081:8081"                       # Same port as local development
+    environment:
+      # These override application-docker.properties if needed
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/eureka_railway?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+      # These read from the .env file (git-ignored). See .env.example
+      RAZORPAY_ENABLED: ${RAZORPAY_ENABLED:-false}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID:-}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET:-}
+      APP_JWT_SECRET: ${JWT_SECRET:-change-this-to-a-long-random-string-at-least-32-chars}
+      APP_MAIL_ENABLED: ${MAIL_ENABLED:-false}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME:-}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      APP_FRONTEND_URL: http://localhost:3000
+    depends_on:
+      mysql-db:
+        condition: service_healthy        # Wait until MySQL is ready before starting
+    restart: on-failure                    # Auto-restart if it crashes
+
+
+  # -------- 3. GenAI RAG Chatbot (Python) --------
+  genai-service:
+    build:
+      context: ./genai-service
+      dockerfile: Dockerfile
+    container_name: railsathi-genai
+    ports:
+      - "8083:8083"
+    environment:
+      # ↓↓↓ PUT YOUR REAL GROQ KEY HERE ↓↓↓
+      GROQ_API_KEY: ${GROQ_API_KEY:-your_groq_api_key_here}
+      # Inside Docker, "backend" is the container name (not localhost!)
+      SPRING_BOOT_URL: http://backend:8081
+    depends_on:
+      - backend                           # Start after backend is up
+    restart: on-failure
+
+
+  # -------- 4. API Gateway (Node.js) --------
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: railsathi-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      # Inside Docker, use container names instead of localhost
+      SPRING_BOOT_URL: http://backend:8081
+      FASTAPI_URL: http://genai-service:8083
+      FRONTEND_URL: http://localhost:3000
+    depends_on:
+      - backend
+      - genai-service
+    restart: on-failure
+
+
+  # -------- 5. React Frontend (Nginx) --------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: railsathi-frontend
+    ports:
+      - "3000:80"                         # Access at http://localhost:3000
+    depends_on:
+      - api-gateway
+    restart: on-failure
+
+
+# -------- Named Volume --------
+# This is like a virtual hard disk for MySQL data.
+# Even if you run "docker compose down", the data stays.
+# To DELETE data too:  docker compose down -v
+volumes:
+  mysql-data:

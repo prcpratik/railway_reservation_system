@@ -1,0 +1,10 @@
+# Don't send these to Docker (speeds up the build)
+target/
+.idea/
+.vscode/
+*.iml
+.settings/
+.project
+.classpath
+.factorypath
+src/main/resources/application-local.properties

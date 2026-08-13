@@ -14,7 +14,6 @@ import com.eureka.railway.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.beans.Transient;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -37,8 +36,8 @@ public class BookingService {
     private final NotificationService notificationService;
 
     public BookingService(BookingRepository bookingRepository, TrainService trainService,
-            UserService userService, PaymentService paymentService,
-            NotificationService notificationService) {
+                          UserService userService, PaymentService paymentService,
+                          NotificationService notificationService) {
         this.bookingRepository = bookingRepository;
         this.trainService = trainService;
         this.userService = userService;
@@ -48,8 +47,8 @@ public class BookingService {
 
     @Transactional
     public BookingResponse book(String userEmail, Long trainId, SeatClass seatClass, LocalDate journeyDate,
-            List<PassengerRequest> passengers, boolean allowWaitlist,
-            String fromStation, String toStation) {
+                                List<PassengerRequest> passengers, boolean allowWaitlist,
+                                String fromStation, String toStation) {
         validatePassengers(passengers);
         if (seatClass == null) {
             throw new IllegalArgumentException("Select a travel class");
@@ -62,8 +61,8 @@ public class BookingService {
         // queue up here, so the seat count and seat numbers below are accurate
         Train train = trainService.getByIdForUpdate(trainId);
 
-        TrainClass trainClass = train.findClass(seatClass).orElseThrow(
-                () -> new IllegalArgumentException("This train does not have " + seatClass.getLabel() + " class"));
+        TrainClass trainClass = train.findClass(seatClass).orElseThrow(() ->
+                new IllegalArgumentException("This train does not have " + seatClass.getLabel() + " class"));
 
         if (!train.getRunsOn().contains(journeyDate.getDayOfWeek())) {
             throw new IllegalArgumentException(train.getName() + " does not run on "
@@ -170,7 +169,7 @@ public class BookingService {
         if (from.getStopOrder() >= to.getStopOrder()) {
             throw new IllegalArgumentException(
                     "This train travels " + first.getStation() + " to " + last.getStation()
-                            + ", so it does not go from " + from.getStation() + " to " + to.getStation());
+                    + ", so it does not go from " + from.getStation() + " to " + to.getStation());
         }
         return new Segment(from.getStation(), to.getStation(),
                 from.getStopOrder(), to.getStopOrder(), train.fareShare(from, to));
@@ -185,8 +184,7 @@ public class BookingService {
         return value == null || value.isBlank();
     }
 
-    // random 10-digit ticket number; retry on the rare collision with an existing
-    // one
+    // random 10-digit ticket number; retry on the rare collision with an existing one
     private String generatePnr() {
         String pnr;
         do {
@@ -195,7 +193,102 @@ public class BookingService {
         } while (bookingRepository.existsByPnr(pnr));
         return pnr;
     }
-    
+
+    // called after the Razorpay checkout succeeds; verifies the signature server-side
+    @Transactional
+    public BookingResponse confirmPayment(Long bookingId, String userEmail, PaymentRequest payment) {
+        Booking booking = getOwnBooking(bookingId, userEmail);
+        if (!"PENDING".equals(booking.getStatus())) {
+            throw new IllegalArgumentException("This booking is not awaiting payment");
+        }
+        boolean valid = booking.getRazorpayOrderId() != null
+                && booking.getRazorpayOrderId().equals(payment.razorpayOrderId())
+                && paymentService.verifySignature(payment.razorpayOrderId(),
+                        payment.razorpayPaymentId(), payment.razorpaySignature());
+        if (!valid) {
+            throw new IllegalArgumentException("Payment verification failed");
+        }
+        booking.setRazorpayPaymentId(payment.razorpayPaymentId());
+        // clear PENDING first so recompute derives the real status (CONFIRMED or WAITLISTED)
+        booking.setStatus("CONFIRMED");
+        recompute(booking);
+        Booking saved = bookingRepository.save(booking);
+        notificationService.sendBookingConfirmation(saved);
+        return BookingResponse.from(saved);
+    }
+
+    // readOnly transaction so the lazily loaded passenger list can be read while
+    // building the DTO, without relying on the open-in-view session
+    @Transactional(readOnly = true)
+    public List<BookingResponse> myBookings(String userEmail) {
+        User user = userService.getByEmail(userEmail);
+        return bookingRepository.findByUserIdOrderByIdDesc(user.getId())
+                .stream().map(BookingResponse::from).toList();
+    }
+
+    // admin only - every booking in the system
+    @Transactional(readOnly = true)
+    public List<BookingResponse> allBookings() {
+        return bookingRepository.findAllByOrderByIdDesc()
+                .stream().map(BookingResponse::from).toList();
+    }
+
+    // partial cancellation: cancel one passenger, the seat is freed and fare reduced
+    @Transactional
+    public BookingResponse cancelPassenger(Long bookingId, Long passengerId, String userEmail) {
+        Booking booking = getOwnBooking(bookingId, userEmail);
+        if ("PENDING".equals(booking.getStatus())) {
+            throw new IllegalArgumentException("Payment is pending - pay first or cancel the whole booking");
+        }
+        Passenger passenger = booking.getPassengers().stream()
+                .filter(p -> p.getId().equals(passengerId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Passenger not found in this booking"));
+        if ("CANCELLED".equals(passenger.getStatus())) {
+            throw new IllegalArgumentException("Passenger is already cancelled");
+        }
+        // lock the train: freeing this seat may promote someone off the waitlist,
+        // which allocates a seat number and must not run twice in parallel
+        Train train = trainService.getByIdForUpdate(booking.getTrain().getId());
+
+        // full refund of this one seat's fare
+        double refunded = refund(booking, booking.getFarePerSeat());
+        passenger.setStatus("CANCELLED");
+        passenger.setSeatNumber(null);
+        passenger.setWaitlistNumber(null);
+        recompute(booking);
+        Booking saved = bookingRepository.save(booking);
+        promoteFromWaitlist(train, booking.getSeatClass(), booking.getJourneyDate());
+        notificationService.sendCancellation(saved, refunded);
+        return BookingResponse.from(saved);
+    }
+
+    // full cancellation: cancel all remaining passengers
+    @Transactional
+    public BookingResponse cancel(Long bookingId, String userEmail) {
+        Booking booking = getOwnBooking(bookingId, userEmail);
+        if ("CANCELLED".equals(booking.getStatus())) {
+            throw new IllegalArgumentException("Booking is already cancelled");
+        }
+        Train train = trainService.getByIdForUpdate(booking.getTrain().getId());
+
+        // refund every seat not cancelled yet - waitlisted passengers paid too
+        long stillActive = booking.getPassengers().stream()
+                .filter(p -> !"CANCELLED".equals(p.getStatus()))
+                .count();
+        double refunded = refund(booking, stillActive * booking.getFarePerSeat());
+        for (Passenger p : booking.getPassengers()) {
+            p.setStatus("CANCELLED");
+            p.setSeatNumber(null);
+            p.setWaitlistNumber(null);
+        }
+        recompute(booking);
+        Booking saved = bookingRepository.save(booking);
+        promoteFromWaitlist(train, booking.getSeatClass(), booking.getJourneyDate());
+        notificationService.sendCancellation(saved, refunded);
+        return BookingResponse.from(saved);
+    }
+
     // full refund of the given amount to the original payment (only for online-paid
     // bookings). Called before the cancellation is persisted, so a failed refund
     // rolls back the whole @Transactional method and nothing is cancelled.
@@ -303,121 +396,4 @@ public class BookingService {
             }
         }
     }
-   
-
-    // called after the Razorpay checkout succeeds; verifies the signature
-    // server-side
-    @Transactional
-    public BookingResponse confirmPayment(Long bookingId, String userEmail, PaymentRequest payment) {
-        Booking booking = getOwnBooking(bookingId, userEmail);
-        if (!"PENDING".equals(booking.getStatus())) {
-            throw new IllegalArgumentException("This booking is not awaiting payment");
-        }
-        boolean valid = booking.getRazorpayOrderId() != null
-                && booking.getRazorpayOrderId().equals(payment.razorpayOrderId())
-                && paymentService.verifySignature(payment.razorpayOrderId(),
-                        payment.razorpayPaymentId(), payment.razorpaySignature());
-        if (!valid) {
-            throw new IllegalArgumentException("Payment verification failed");
-        }
-        booking.setRazorpayPaymentId(payment.razorpayPaymentId());
-        // clear PENDING first so recompute derives the real status (CONFIRMED or
-        // WAITLISTED)
-        booking.setStatus("CONFIRMED");
-        recompute(booking);
-        Booking saved = bookingRepository.save(booking);
-        notificationService.sendBookingConfirmation(saved);
-        return BookingResponse.from(saved);
-    }
-
-    // readOnly transaction so the lazily loaded passenger list can be read while
-    // building the DTO, without relying on the open-in-view session
-    @Transactional(readOnly = true)
-    public List<BookingResponse> myBookings(String userEmail) {
-        User user = userService.getByEmail(userEmail);
-        return bookingRepository.findByUserIdOrderByIdDesc(user.getId())
-                .stream().map(BookingResponse::from).toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<BookingResponse> allBookings() {
-        List<Booking> bookings = bookingRepository.findAllByOrderByIdDesc();
-        List<BookingResponse> responses = new ArrayList<>(bookings.size());
-        for (Booking booking : bookings) {
-            responses.add(BookingResponse.from(booking));
-        }
-        return responses;
-    }
-
-    // partial cancellation: cancel one passenger, the seat is freed and fare
-    // reduced
-    @Transactional
-    public BookingResponse cancelPassenger(Long bookingId, Long passengerId, String userEmail) {
-        Booking booking = getOwnBooking(bookingId, userEmail);
-        if ("PENDING".equals(booking.getStatus())) {
-            throw new IllegalArgumentException("Payment is pending - pay first or cancel the whole booking");
-        }
-
-        Passenger passenger = null;
-        for (Passenger p : booking.getPassengers()) {
-            if (p.getId().equals(passengerId)) {
-                passenger = p;
-                break;
-            }
-        }
-
-        if (passenger == null) {
-            throw new IllegalArgumentException("Passenger not found in this booking");
-        }
-
-        if ("CANCELLED".equals(passenger.getStatus())) {
-            throw new IllegalArgumentException("Passenger is already cancelled");
-        }
-
-        // lock the train: freeing this seat may promote someone off the waitlist,
-        // which allocates a seat number and must not run twice in parallel
-        Train train = trainService.getByIdForUpdate(booking.getTrain().getId());
-
-        // full refund of this one seat's fare
-        double refunded = refund(booking, booking.getFarePerSeat());
-        passenger.setStatus("CANCELLED");
-        passenger.setSeatNumber(null);
-        passenger.setWaitlistNumber(null);
-        recompute(booking);
-        Booking saved = bookingRepository.save(booking);
-        promoteFromWaitlist(train, booking.getSeatClass(), booking.getJourneyDate());
-        notificationService.sendCancellation(saved, refunded);
-        return BookingResponse.from(saved);
-    }
-
-    // full cancellation: cancel all remaining passengers
-    @Transactional
-    public BookingResponse cancel(Long bookingId, String userEmail) {
-        Booking booking = getOwnBooking(bookingId, userEmail);
-        if ("CANCELLED".equals(booking.getStatus())) {
-            throw new IllegalArgumentException("Booking is already cancelled");
-        }
-        Train train = trainService.getByIdForUpdate(booking.getTrain().getId());
-
-        // refund every seat not cancelled yet - waitlisted passengers paid too
-        long stillActive = 0;
-        for (Passenger p : booking.getPassengers()) {
-            if (!"CANCELLED".equals(p.getStatus())) {
-                stillActive++;
-            }
-        }
-
-        double refunded = refund(booking, stillActive * booking.getFarePerSeat());
-        for (Passenger p : booking.getPassengers()) {
-            p.setStatus("CANCELLED");
-            p.setSeatNumber(null);
-            p.setWaitlistNumber(null);
-        }
-        recompute(booking);
-        Booking saved = bookingRepository.save(booking);
-        promoteFromWaitlist(train, booking.getSeatClass(), booking.getJourneyDate());
-        notificationService.sendCancellation(saved, refunded);
-        return BookingResponse.from(saved);
-    }
-
 }
